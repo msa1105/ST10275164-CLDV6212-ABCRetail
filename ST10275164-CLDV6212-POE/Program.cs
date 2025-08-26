@@ -4,7 +4,6 @@ using Azure.Storage.Queues;
 using Azure.Storage.Files.Shares;
 using ST10275164_CLDV6212_POE.Services;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,6 +11,12 @@ builder.Services.AddControllersWithViews();
 
 // Get the connection string
 var connectionString = builder.Configuration.GetSection("AzureStorage")["ConnectionString"];
+
+// Validate connection string
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Azure Storage connection string is not configured.");
+}
 
 // Register Azure Clients
 builder.Services.AddSingleton(x => new TableServiceClient(connectionString));
@@ -24,6 +29,13 @@ builder.Services.AddSingleton<ITableStorageService, TableStorageService>();
 builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
 builder.Services.AddSingleton<IQueueStorageService, QueueStorageService>();
 builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+
+// Add logging
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.AddDebug();
+});
 
 var app = builder.Build();
 

@@ -1,0 +1,39 @@
+﻿@{
+    ViewData["Title"] = "Azure Storage Diagnostic";
+}
+
+<h1>Azure Storage Connection Diagnostic</h1>
+
+<div class="row mb-3">
+    <div class="col">
+        <a asp-action="TestConnection" class="btn btn-primary">Test Azure Connection</a>
+        <a asp-action="TestProducts" class="btn btn-info">Test Product Creation</a>
+        <a asp-action="ClearTestData" class="btn btn-warning">Clear Test Data</a>
+    </div>
+</div>
+
+@if (ViewBag.Results != null)
+{
+    <div class="card">
+        <div class="card-header">
+            <h5>Diagnostic Results</h5>
+        </div>
+        <div class="card-body">
+            <pre style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap;">@string.Join("\n", ViewBag.Results)</pre>
+        </div>
+    </div>
+}
+
+<hr />
+
+<div class="alert alert-info">
+    <h6>What this test does:</h6>
+    <ul class="mb-0">
+        <li>Tests connection to all Azure Storage services</li>
+        <li>Lists existing tables, containers, queues, and file shares</li>
+        <li>Creates a test customer in Table Storage</li>
+        <li>Uploads test files to Blob and File Storage</li>
+        <li>Sends a test message to Queue Storage</li>
+        <li>Displays any error messages</li>
+    </ul>
+</div>
