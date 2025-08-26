@@ -1,0 +1,44 @@
+﻿@model IEnumerable<ST10275164_CLDV6212_POE.Models.Product>
+
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h1>Our Products</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Product</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                    {
+                        <img src="@item.ImageUrl" alt="@item.Name" style="max-width: 100px; height: auto;" />
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
