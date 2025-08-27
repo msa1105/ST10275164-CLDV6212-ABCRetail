@@ -1,5 +1,234 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<ST10275164_CLDV6212_POE.Models.ContractViewModel>
+
 @{
+    ViewData["Title"] = "Contracts";
 }
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="gradient-text">Contract Management</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <i class="fas fa-plus me-2"></i>Upload New Contract
+        </button>
+    </div>
+
+    <!-- Upload Success/Error Messages -->
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle me-2"></i>@ViewBag.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Contracts List -->
+    <div class="row">
+        <div class="col-12">
+            @if (Model != null && Model.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-file-contract me-2"></i>
+                            Uploaded Contracts (@Model.Count())
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-file me-2"></i>File Name</th>
+                                        <th><i class="fas fa-calendar me-2"></i>Upload Date</th>
+                                        <th><i class="fas fa-download me-2"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var contract in Model)
+                                    {
+                                        <tr class="hover-lift-subtle">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @{
+                                                        var extension = contract.FileName.Split('.').LastOrDefault()?.ToLower();
+                                                        var iconClass = extension switch
+                                                        {
+                                                            "pdf" => "fas fa-file-pdf text-danger",
+                                                            "doc" or "docx" => "fas fa-file-word text-primary",
+                                                            "txt" => "fas fa-file-alt text-secondary",
+                                                            _ => "fas fa-file text-muted"
+                                                        };
+                                                    }
+                                                    <i class="@iconClass me-3"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">@contract.FileName</div>
+                                                        <small class="text-muted">@extension?.ToUpper() Document</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    Just uploaded
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="@contract.FileUrl"
+                                                       class="btn btn-outline-primary btn-sm"
+                                                       target="_blank"
+                                                       title="View Contract">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="@contract.FileUrl"
+                                                       class="btn btn-outline-success btn-sm"
+                                                       download="@contract.FileName"
+                                                       title="Download Contract">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-file-contract fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">No Contracts Uploaded</h4>
+                    <p class="text-muted mb-4">Upload your first contract to get started</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="fas fa-upload me-2"></i>Upload First Contract
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="uploadModalLabel">
+                    <i class="fas fa-file-upload me-2"></i>Upload New Contract
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="contractFile" class="form-label fw-semibold">
+                            <i class="fas fa-file me-2"></i>Select Contract File
+                        </label>
+                        <input name="contractFile"
+                               type="file"
+                               class="form-control"
+                               id="contractFile"
+                               accept=".pdf,.doc,.docx,.txt"
+                               required />
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Supported formats: PDF, Word documents, Text files (Max 10MB)
+                        </div>
+                    </div>
+
+                    <div class="upload-preview d-none" id="uploadPreview">
+                        <div class="alert alert-light border">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-alt fa-2x text-primary me-3"></i>
+                                <div>
+                                    <div class="fw-semibold" id="previewFileName"></div>
+                                    <small class="text-muted" id="previewFileSize"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Upload Contract
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift-subtle {
+        transition: transform 0.2s ease;
+    }
+
+        .hover-lift-subtle:hover {
+            transform: translateY(-1px);
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+    .table td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+    }
+
+    .btn-group .btn {
+        margin-right: 0.25rem;
+    }
+
+        .btn-group .btn:last-child {
+            margin-right: 0;
+        }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('contractFile');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const previewFileName = document.getElementById('previewFileName');
+        const previewFileSize = document.getElementById('previewFileSize');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                previewFileName.textContent = file.name;
+                previewFileSize.textContent = formatFileSize(file.size);
+                uploadPreview.classList.remove('d-none');
+
+                // Update icon based on file type
+                const extension = file.name.split('.').pop().toLowerCase();
+                const iconElement = uploadPreview.querySelector('i');
+                iconElement.className = getFileIcon(extension);
+            } else {
+                uploadPreview.classList.add('d-none');
+            }
+        });
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getFileIcon(extension) {
+            switch(extension) {
+                case 'pdf': return 'fas fa-file-pdf fa-2x text-danger';
+                case 'doc':
+                case 'docx': return 'fas fa-file-word fa-2x text-primary';
+                case 'txt': return 'fas fa-file-alt fa-2x text-secondary';
+                default: return 'fas fa-file fa-2x text-muted';
+            }
+        }
+    });
+</script>

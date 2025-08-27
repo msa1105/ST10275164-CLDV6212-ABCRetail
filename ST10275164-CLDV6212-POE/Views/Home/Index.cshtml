@@ -10,42 +10,120 @@
     <div class="hero-content">
         <h1>Time is Money.</h1>
         <p class="lead">How much are you worth?</p>
-        <a href="#" class="btn btn-lg">Explore Now</a>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-lg">Explore Now</a>
     </div>
 </section>
 
 <div class="container my-5 fade-in">
-    <h2 class="text-center mb-5">Featured Products</h2>
+    <h2 class="text-center mb-5 gradient-text">Featured Products</h2>
     <div class="product-grid">
         @foreach (var product in Model)
         {
-            <div class="product-card">
-                <img src="@product.ImageUrl" alt="@product.Name" class="card-img-top">
-                <div class="card-body">
-                    <h5 class="card-title">@product.Name</h5>
-                    <p class="card-text">@product.Description</p>
-                </div>
-                <div class="product-card-footer">
-                    R @product.Price
-                </div>
+            <div class="product-card hover-lift">
+                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.RowKey" class="text-decoration-none">
+                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                    {
+                        <img src="@product.ImageUrl" alt="@product.Name" class="card-img-top">
+                    }
+                    else
+                    {
+                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 250px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title text-dark">@product.Name</h5>
+                        <p class="card-text text-muted">@product.Description</p>
+                    </div>
+                    <div class="product-card-footer">
+                        R @product.Price
+                    </div>
+                </a>
             </div>
         }
     </div>
-</div>
-<div class="container my-5 fade-in">
-    <h2 class="text-center mb-5">Shop by Category</h2>
-    <div class="row text-center">
-        <div class="col-md-4">
-            <img src="https://st10275164.blob.core.windows.net/product-images/daa00266-f30b-4a68-9c51-17d45293dbee_27582700_57343908_1000.webp" class="img-fluid rounded-circle mb-3" alt="Luxury">
-            <h4>Luxury</h4>
-        </div>
-        <div class="col-md-4">
-            <img src="https://st10275164.blob.core.windows.net/product-images/06bd7cd8-e325-4d8f-9825-1e02f07adddb_23979915_54017212_1000.webp" class="img-fluid rounded-circle mb-3" alt="Casual">
-            <h4>Casual</h4>
-        </div>
-        <div class="col-md-4">
-            <img src="https://st10275164.blob.core.windows.net/product-images/1c02c399-da62-4adc-8ebc-7f3368db0cff_28457217_59671741_1000.webp" class="img-fluid rounded-circle mb-3" alt="Lifestyle">
-            <h4>Lifestyle</h4>
+
+    <div class="container my-5 fade-in">
+        <h2 class="text-center mb-5 gradient-text">Shop by Category</h2>
+        <div class="row text-center g-4">
+            <div class="col-md-4">
+                <div class="category-card hover-lift">
+                    <img src="https://st10275164.blob.core.windows.net/product-images/daa00266-f30b-4a68-9c51-17d45293dbee_27582700_57343908_1000.webp"
+                         class="img-fluid rounded-circle mb-3"
+                         alt="Luxury"
+                         style="width: 200px; height: 200px; object-fit: cover;"
+                         loading="lazy">
+                    <h4 class="fw-bold">Luxury</h4>
+                    <p class="text-muted">Premium timepieces for the discerning individual</p>
+                    <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary">Browse Luxury</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="category-card hover-lift">
+                    <img src="https://st10275164.blob.core.windows.net/product-images/06bd7cd8-e325-4d8f-9825-1e02f07adddb_23979915_54017212_1000.webp"
+                         class="img-fluid rounded-circle mb-3"
+                         alt="Casual"
+                         style="width: 200px; height: 200px; object-fit: cover;"
+                         loading="lazy">
+                    <h4 class="fw-bold">Casual</h4>
+                    <p class="text-muted">Everyday elegance for every occasion</p>
+                    <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary">Browse Casual</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="category-card hover-lift">
+                    <img src="https://st10275164.blob.core.windows.net/product-images/1c02c399-da62-4adc-8ebc-7f3368db0cff_28457217_59671741_1000.webp"
+                         class="img-fluid rounded-circle mb-3"
+                         alt="Lifestyle"
+                         style="width: 200px; height: 200px; object-fit: cover;"
+                         loading="lazy">
+                    <h4 class="fw-bold">Lifestyle</h4>
+                    <p class="text-muted">Perfect companions for your active life</p>
+                    <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary">Browse Lifestyle</a>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- Newsletter Section -->
+    <div class="bg-light py-5 fade-in">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 text-center">
+                    <h3 class="fw-bold mb-3">Stay Updated</h3>
+                    <p class="text-muted mb-4">Get the latest updates on new arrivals and exclusive offers</p>
+                    <form class="d-flex gap-2">
+                        <input type="email" class="form-control" placeholder="Enter your email" required>
+                        <button type="submit" class="btn btn-primary px-4">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="container my-5 fade-in">
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-shipping-fast fa-3x text-primary"></i>
+                </div>
+                <h5 class="fw-bold">Fast Shipping</h5>
+                <p class="text-muted">Free shipping on orders over R1000</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                </div>
+                <h5 class="fw-bold">Secure Payment</h5>
+                <p class="text-muted">Your payment information is safe with us</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-headset fa-3x text-primary"></i>
+                </div>
+                <h5 class="fw-bold">24/7 Support</h5>
+                <p class="text-muted">We're here to help whenever you need us</p>
+            </div>
+        </div>
+    </div>

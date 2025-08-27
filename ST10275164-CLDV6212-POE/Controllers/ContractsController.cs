@@ -10,13 +10,14 @@ namespace ST10275164_CLDV6212_POE.Controllers
         private readonly IConfiguration _configuration;
         private readonly IQueueStorageService _queueStorageService;
 
-        public ContractsController(IFileStorageService fileStorageService, IConfiguration configuration)
+        public ContractsController(IFileStorageService fileStorageService, IConfiguration configuration, IQueueStorageService queueStorageService)
         {
             _fileStorageService = fileStorageService;
             _configuration = configuration;
+            _queueStorageService = queueStorageService;
         }
 
-        // NEW INDEX ACTION
+        // INDEX ACTION - Shows contracts and handles upload
         public async Task<IActionResult> Index()
         {
             var fileNames = await _fileStorageService.GetAllFilesAsync();
@@ -34,11 +35,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return View(contracts);
         }
 
-        public IActionResult Upload()
-        {
-            return View();
-        }
-
+        // UPLOAD ACTION - Handles the file upload POST request
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(IFormFile contractFile)
@@ -51,14 +48,14 @@ namespace ST10275164_CLDV6212_POE.Controllers
                     await _fileStorageService.UploadFileAsync(fileName, stream);
                     await _queueStorageService.SendMessageAsync("contract-events", $"New Contract Uploaded: {fileName}");
                 }
-                ViewBag.Message = "File uploaded successfully!";
+                TempData["Message"] = "Contract uploaded successfully!";
             }
             else
             {
-                ViewBag.Message = "Please select a file to upload.";
+                TempData["Message"] = "Please select a file to upload.";
             }
 
-            return View();
+            return RedirectToAction(nameof(Index));
         }
     }
 }
