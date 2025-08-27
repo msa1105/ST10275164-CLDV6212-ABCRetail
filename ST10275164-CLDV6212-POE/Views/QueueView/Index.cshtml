@@ -1,0 +1,41 @@
+﻿@model ST10275164_CLDV6212_POE.Models.QueueViewModel
+
+@{
+    ViewData["Title"] = "Queue Viewer";
+}
+
+<h1>Azure Storage Queues</h1>
+<p>The following queues have been automatically created in your storage account.</p>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Queue Name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.QueueNames != null && Model.QueueNames.Any())
+        {
+            foreach (var queueName in Model.QueueNames)
+            {
+                <tr>
+                    <td>@queueName</td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-queueName="@queueName" class="btn btn-secondary">View Messages</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="2">
+                    <div class="text-center p-4">
+                        No queues found. New queues will appear here automatically.
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

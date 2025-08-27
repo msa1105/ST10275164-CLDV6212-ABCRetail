@@ -114,7 +114,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                     results.Add($"Found queue: {queue.Name}");
                 }
 
-                await _queueStorageService.SendMessageAsync($"Test message at {DateTime.Now}");
+               // await _queueStorageService.SendMessageAsync($"Test message at {DateTime.Now}");
                 results.Add("✅ Successfully sent test queue message");
             }
             catch (Exception ex)

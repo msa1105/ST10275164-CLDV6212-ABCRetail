@@ -1,0 +1,28 @@
+﻿@model ST10275164_CLDV6212_POE.Models.QueueDetailsViewModel
+
+@{
+    ViewData["Title"] = "Queue Messages";
+}
+
+<h1>Messages in <strong>@Model.QueueName</strong></h1>
+<p>Showing up to 10 of the oldest messages in the queue. These messages are not deleted by viewing them.</p>
+
+@if (Model.Messages != null && Model.Messages.Any())
+{
+    <ul class="list-group">
+        @foreach (var message in Model.Messages)
+        {
+            <li class="list-group-item">@message</li>
+        }
+    </ul>
+}
+else
+{
+    <div class="alert alert-info">
+        There are no messages in this queue.
+    </div>
+}
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">Back to Queue List</a>
+</div>

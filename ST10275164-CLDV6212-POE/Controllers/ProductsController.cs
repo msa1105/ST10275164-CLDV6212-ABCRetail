@@ -8,11 +8,14 @@ namespace ST10275164_CLDV6212_POE.Controllers
     {
         private readonly ITableStorageService _tableStorageService;
         private readonly IBlobStorageService _blobStorageService;
+        private readonly IQueueStorageService _queueStorageService; // --- FIX: Declare the service ---
 
-        public ProductsController(ITableStorageService tableStorageService, IBlobStorageService blobStorageService)
+        // --- FIX: Inject the service in the constructor ---
+        public ProductsController(ITableStorageService tableStorageService, IBlobStorageService blobStorageService, IQueueStorageService queueStorageService)
         {
             _tableStorageService = tableStorageService;
             _blobStorageService = blobStorageService;
+            _queueStorageService = queueStorageService; // --- FIX: Assign the service ---
         }
 
         public async Task<IActionResult> Index()
@@ -37,10 +40,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                     var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
                     using (var stream = imageFile.OpenReadStream())
                     {
-                        // 1. The service uploads the image and returns its public URL.
                         var imageUrl = await _blobStorageService.UploadFileToBlobAsync(uniqueFileName, stream);
-
-                        // 2. (THE FIX) We assign the returned URL to the product's ImageUrl property.
                         product.ImageUrl = imageUrl;
                     }
                 }
@@ -49,30 +49,21 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 product.PartitionKey = "Product";
                 product.RowKey = product.ProductId;
 
-                // 3. We now save the complete product object, including the ImageUrl, to the database.
                 await _tableStorageService.UpsertEntityAsync(product);
+
+                // This line will now work correctly
+                await _queueStorageService.SendMessageAsync("product-events", $"New Product Created: {product.Name} (ID: {product.ProductId})");
 
                 return RedirectToAction(nameof(Index));
             }
-
             return View(product);
         }
 
-        // This Details action is for the clickable cards feature. No changes needed here.
         public async Task<IActionResult> Details(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
             var product = await _tableStorageService.GetEntityAsync<Product>("Product", id);
-
-            if (product == null)
-            {
-                return NotFound();
-            }
-
+            if (product == null) return NotFound();
             return View(product);
         }
     }

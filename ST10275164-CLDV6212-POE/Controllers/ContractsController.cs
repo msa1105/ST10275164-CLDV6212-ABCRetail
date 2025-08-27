@@ -8,6 +8,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
     {
         private readonly IFileStorageService _fileStorageService;
         private readonly IConfiguration _configuration;
+        private readonly IQueueStorageService _queueStorageService;
 
         public ContractsController(IFileStorageService fileStorageService, IConfiguration configuration)
         {
@@ -48,6 +49,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 using (var stream = contractFile.OpenReadStream())
                 {
                     await _fileStorageService.UploadFileAsync(fileName, stream);
+                    await _queueStorageService.SendMessageAsync("contract-events", $"New Contract Uploaded: {fileName}");
                 }
                 ViewBag.Message = "File uploaded successfully!";
             }

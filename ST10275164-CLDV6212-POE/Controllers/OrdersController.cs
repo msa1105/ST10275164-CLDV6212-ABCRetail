@@ -61,8 +61,10 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 order.RowKey = order.OrderId;
                 order.OrderDate = DateTime.UtcNow;
 
+                // Update the following line in the POST: Orders/Create method
+                await _queueStorageService.SendMessageAsync("orders-queue", $"New order created: {order.OrderId}");
                 await _tableStorageService.UpsertEntityAsync(order);
-                await _queueStorageService.SendMessageAsync($"New order created: {order.OrderId}");
+                
 
                 return RedirectToAction(nameof(Index));
             }
