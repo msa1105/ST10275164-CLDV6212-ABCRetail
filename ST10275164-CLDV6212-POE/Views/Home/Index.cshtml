@@ -1,44 +1,51 @@
-﻿@model IEnumerable<ST10275164_CLDV6212_POE.Models.Product>
-
-@{
+﻿@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome to ABC Retail</h1>
-    <p>Your one-stop shop for the latest and greatest products.</p>
-</div>
+<section class="hero">
+    <video playsinline autoplay muted loop id="hero-video">
+        <source src="~/videos/The Rolex Submariner - ROLEX (1080p, h264).mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="hero-content">
+        <h1>Time is Money.</h1>
+        <p class="lead">How much are you worth?</p>
+        <a href="#" class="btn btn-lg">Explore Now</a>
+    </div>
+</section>
 
-<hr class="my-5" />
-
-<div class="container">
-    <h2 class="text-center mb-4">Recent Products</h2>
-    <div class="row">
-        @if (Model != null && Model.Any())
+<div class="container my-5 fade-in">
+    <h2 class="text-center mb-5">Featured Products</h2>
+    <div class="product-grid">
+        @foreach (var product in Model)
         {
-            // This is the section that was causing the error.
-            // It now safely loops through the products passed from the controller.
-            foreach (var product in Model)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card product-card h-100">
-                        <img src="@(product.ImageUrl ?? "https://via.placeholder.com/300x200.png?text=No+Image")" class="product-card-img" alt="@product.Name">
-                        <div class="card-body">
-                            <h5 class="card-title">@product.Name</h5>
-                            <p class="card-text">@product.Description</p>
-                        </div>
-                        <div class="product-card-footer">
-                            @product.Price.ToString("C", new System.Globalization.CultureInfo("en-ZA"))
-                        </div>
-                    </div>
+            <div class="product-card">
+                <img src="@product.ImageUrl" alt="@product.Name" class="card-img-top">
+                <div class="card-body">
+                    <h5 class="card-title">@product.Name</h5>
+                    <p class="card-text">@product.Description</p>
                 </div>
-            }
-        }
-        else
-        {
-            <div class="col text-center">
-                <p>No recent products to display. Try adding some!</p>
+                <div class="product-card-footer">
+                    R @product.Price
+                </div>
             </div>
         }
+    </div>
+</div>
+<div class="container my-5 fade-in">
+    <h2 class="text-center mb-5">Shop by Category</h2>
+    <div class="row text-center">
+        <div class="col-md-4">
+            <img src="https://st10275164.blob.core.windows.net/product-images/daa00266-f30b-4a68-9c51-17d45293dbee_27582700_57343908_1000.webp" class="img-fluid rounded-circle mb-3" alt="Luxury">
+            <h4>Luxury</h4>
+        </div>
+        <div class="col-md-4">
+            <img src="https://st10275164.blob.core.windows.net/product-images/06bd7cd8-e325-4d8f-9825-1e02f07adddb_23979915_54017212_1000.webp" class="img-fluid rounded-circle mb-3" alt="Casual">
+            <h4>Casual</h4>
+        </div>
+        <div class="col-md-4">
+            <img src="https://st10275164.blob.core.windows.net/product-images/1c02c399-da62-4adc-8ebc-7f3368db0cff_28457217_59671741_1000.webp" class="img-fluid rounded-circle mb-3" alt="Lifestyle">
+            <h4>Lifestyle</h4>
+        </div>
     </div>
 </div>

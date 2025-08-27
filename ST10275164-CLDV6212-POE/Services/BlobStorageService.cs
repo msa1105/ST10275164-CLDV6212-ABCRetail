@@ -1,4 +1,6 @@
-﻿using Azure.Storage.Blobs.Models;
+﻿// In ST10275164-CLDV6212-POE/Services/BlobStorageService.cs
+
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
 
 namespace ST10275164_CLDV6212_POE.Services
@@ -7,7 +9,6 @@ namespace ST10275164_CLDV6212_POE.Services
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly ILogger<BlobStorageService> _logger;
-        // The container where product images will be stored
         private const string ContainerName = "product-images";
 
         public BlobStorageService(BlobServiceClient blobServiceClient, ILogger<BlobStorageService> logger)
@@ -23,25 +24,14 @@ namespace ST10275164_CLDV6212_POE.Services
                 _logger.LogInformation($"Uploading file to blob storage: {fileName}");
 
                 var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
-
-                // Create the container with no public access
-                _logger.LogInformation($"Creating container if not exists: {ContainerName}");
                 await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
 
                 var blobClient = containerClient.GetBlobClient(fileName);
-
-                // Determine content type based on file extension
-                var contentType = GetContentType(fileName);
-
-                // Reset stream position to beginning
                 fileStream.Position = 0;
 
                 await blobClient.UploadAsync(fileStream, overwrite: true);
 
                 _logger.LogInformation($"Successfully uploaded blob: {fileName}");
-
-                // Return the blob URI - we'll handle access through different means
-                // In production, you might want to implement a controller action to serve these files
                 return blobClient.Uri.ToString();
             }
             catch (Exception ex)
@@ -51,20 +41,17 @@ namespace ST10275164_CLDV6212_POE.Services
             }
         }
 
-        public async Task<string> GetBlobSasUrlAsync(string fileName)
+        public async Task<string> GetBlobUrlAsync(string containerName, string blobName) // Updated method
         {
             try
             {
-                var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
-                var blobClient = containerClient.GetBlobClient(fileName);
-
-                // For now, just return the blob URI
-                // You can implement SAS token generation later if needed
+                var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+                var blobClient = containerClient.GetBlobClient(blobName);
                 return blobClient.Uri.ToString();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error getting blob URL for: {fileName}");
+                _logger.LogError(ex, $"Error getting blob URL for: {blobName}");
                 throw;
             }
         }
@@ -110,10 +97,6 @@ namespace ST10275164_CLDV6212_POE.Services
                 ".png" => "image/png",
                 ".gif" => "image/gif",
                 ".webp" => "image/webp",
-                ".bmp" => "image/bmp",
-                ".svg" => "image/svg+xml",
-                ".pdf" => "application/pdf",
-                ".txt" => "text/plain",
                 _ => "application/octet-stream"
             };
         }

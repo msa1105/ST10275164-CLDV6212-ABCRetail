@@ -40,7 +40,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
                 // This line will now work correctly
                 await _queueStorageService.SendMessageAsync("customer-events", $"New Customer Created: {customer.Name} (ID: {customer.CustomerId})");
-
+                
                 return RedirectToAction(nameof(Index));
             }
             return View(customer);

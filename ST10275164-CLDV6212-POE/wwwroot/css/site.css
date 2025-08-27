@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* --- Global Nike-Inspired Palette --- */
+/* --- Global Palette --- */
 :root {
     --primary-color: #111; /* strong black */
-    --accent-color: #e50914; /* Nike CTA red */
+    --accent-color: #c0c0c0; /* Silver */
     --background-color: #fff; /* white background */
     --card-background-color: #f8f9fa;
     --text-color: #111;
@@ -16,7 +16,7 @@ html, body {
     height: 100%;
     margin: 0;
     font-family: 'Poppins', sans-serif;
-    background-color: var(--background-color);
+    /* Removed background-color from here to prevent it from covering the video */
     color: var(--text-color);
 }
 
@@ -57,45 +57,71 @@ html, body {
 
 /* --- Hero Section --- */
 .hero {
-    background: url('/images/hero.jpg') center/cover no-repeat;
-    height: 80vh;
+    position: relative;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     color: #fff;
-    position: relative;
+    overflow: hidden;
+    background-color: transparent; /* Ensures video is visible */
 }
 
-    .hero::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: rgba(0,0,0,0.4);
-    }
+#hero-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -1;
+    transform: translateX(-50%) translateY(-50%);
+    background-size: cover;
+    transition: 1s opacity;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: transparent;
+}
 
 .hero-content {
     position: relative;
     z-index: 2;
+    animation: fadeIn 2s ease-in-out;
 }
 
 .hero h1 {
-    font-size: 3.5rem;
+    font-size: 4rem;
     font-weight: 800;
     margin-bottom: 1rem;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Adds shadow for readability */
 }
 
-.hero button {
-    background: var(--primary-color);
-    color: #fff;
+.hero p {
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Adds shadow for readability */
+}
+
+
+.hero .btn {
+    background: linear-gradient(145deg, #e6e6e6, #b3b3b3); /* Shiny silver gradient */
+    color: #333;
     border: none;
-    padding: 0.9rem 2rem;
+    padding: 1rem 2.5rem;
     font-weight: 600;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    border-radius: 50px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-    .hero button:hover {
-        background: var(--accent-color);
+    .hero .btn:hover {
+        background: var(--primary-color);
+        color: #fff;
     }
 
 /* --- Headings --- */
@@ -115,8 +141,9 @@ h1, h2, h3 {
 }
 
     .btn-primary:hover {
-        background-color: var(--accent-color);
-        border-color: var(--accent-color);
+        background: linear-gradient(145deg, #e6e6e6, #b3b3b3); /* Shiny silver gradient */
+        border-color: #b3b3b3;
+        color: #333;
         transform: translateY(-2px);
         box-shadow: 0 6px 14px rgba(0,0,0,0.2);
     }
@@ -124,67 +151,82 @@ h1, h2, h3 {
 /* --- Product Grid --- */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 2rem;
-    padding: 3rem 0;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2.5rem;
+    padding: 4rem 0;
 }
 
 .product-card {
     background: #fff;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border: none;
+    border-radius: 1rem;
     overflow: hidden;
-    box-shadow: var(--box-shadow);
-    transition: transform 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
     cursor: pointer;
 }
 
     .product-card:hover {
-        transform: translateY(-6px);
+        transform: translateY(-10px);
+        box-shadow: 0 15px 25px rgba(0,0,0,0.1);
     }
 
     .product-card img {
         width: 100%;
-        height: 250px;
+        height: 280px;
         object-fit: cover;
-        transition: transform 0.3s ease;
+        transition: transform 0.4s ease;
     }
 
     .product-card:hover img {
-        transform: scale(1.05);
+        transform: scale(1.08);
     }
 
     .product-card .card-body {
-        padding: 1.2rem;
+        padding: 1.5rem;
     }
 
     .product-card .card-title {
         font-weight: 600;
         margin-bottom: 0.5rem;
+        font-size: 1.2rem;
     }
 
     .product-card .card-text {
         color: var(--muted-text-color);
         font-size: 0.9rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
     }
 
 .product-card-footer {
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     border-top: 1px solid var(--border-color);
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color); /* Changed from accent to primary for better contrast */
 }
 
 /* --- Footer --- */
 .footer {
     background: #000;
     color: #aaa;
-    padding: 2rem;
+    padding: 3rem;
     font-size: 0.9rem;
 }
 
     .footer p {
         margin: 0;
     }
+
+/* --- Animations --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
