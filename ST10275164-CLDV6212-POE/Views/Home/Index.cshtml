@@ -1,8 +1,44 @@
-﻿@{
+﻿@model IEnumerable<ST10275164_CLDV6212_POE.Models.Product>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Welcome to ABC Retail</h1>
+    <p>Your one-stop shop for the latest and greatest products.</p>
+</div>
+
+<hr class="my-5" />
+
+<div class="container">
+    <h2 class="text-center mb-4">Recent Products</h2>
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            // This is the section that was causing the error.
+            // It now safely loops through the products passed from the controller.
+            foreach (var product in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card product-card h-100">
+                        <img src="@(product.ImageUrl ?? "https://via.placeholder.com/300x200.png?text=No+Image")" class="product-card-img" alt="@product.Name">
+                        <div class="card-body">
+                            <h5 class="card-title">@product.Name</h5>
+                            <p class="card-text">@product.Description</p>
+                        </div>
+                        <div class="product-card-footer">
+                            @product.Price.ToString("C", new System.Globalization.CultureInfo("en-ZA"))
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col text-center">
+                <p>No recent products to display. Try adding some!</p>
+            </div>
+        }
+    </div>
 </div>

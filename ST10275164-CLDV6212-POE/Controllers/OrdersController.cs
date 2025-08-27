@@ -16,10 +16,32 @@ namespace ST10275164_CLDV6212_POE.Controllers
             _queueStorageService = queueStorageService;
         }
 
+        // NEW ACTION TO DISPLAY ALL ORDERS
+        public async Task<IActionResult> Index()
+        {
+            var orders = await _tableStorageService.GetAllEntitiesAsync<Order>();
+            var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
+            var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
+
+            // Use ToDictionary for efficient lookups
+            var customerDict = customers.ToDictionary(c => c.RowKey, c => c.Name);
+            var productDict = products.ToDictionary(p => p.RowKey, p => p.Name);
+
+            var orderViewModels = orders.Select(o => new OrderViewModel
+            {
+                OrderId = o.OrderId,
+                OrderDate = o.OrderDate,
+                TotalAmount = o.TotalAmount,
+                CustomerName = customerDict.ContainsKey(o.CustomerId) ? customerDict[o.CustomerId] : "N/A",
+                ProductName = productDict.ContainsKey(o.ProductId) ? productDict[o.ProductId] : "N/A"
+            }).ToList();
+
+            return View(orderViewModels);
+        }
+
         // GET: Orders/Create
         public async Task<IActionResult> Create()
         {
-            // Load customers and products to populate dropdown lists
             var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
             var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
             ViewBag.CustomerId = new SelectList(customers, "CustomerId", "Name");
@@ -34,23 +56,17 @@ namespace ST10275164_CLDV6212_POE.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Set order details
                 order.OrderId = Guid.NewGuid().ToString();
                 order.PartitionKey = "Order";
                 order.RowKey = order.OrderId;
                 order.OrderDate = DateTime.UtcNow;
 
-                // Save order to Table Storage
                 await _tableStorageService.UpsertEntityAsync(order);
-
-                // Send a message to Queue Storage to notify of the new order
                 await _queueStorageService.SendMessageAsync($"New order created: {order.OrderId}");
 
-                // Redirect to a confirmation page or home page
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction(nameof(Index));
             }
 
-            // If model is invalid, reload dropdowns
             var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
             var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
             ViewBag.CustomerId = new SelectList(customers, "CustomerId", "Name", order.CustomerId);

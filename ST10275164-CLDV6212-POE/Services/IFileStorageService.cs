@@ -3,5 +3,8 @@
     public interface IFileStorageService
     {
         Task UploadFileAsync(string fileName, Stream fileStream);
+
+
+        Task<IEnumerable<string>> GetAllFilesAsync();
     }
 }
