@@ -2,9 +2,11 @@
 {
     public interface IFileStorageService
     {
-        Task UploadFileAsync(string fileName, Stream fileStream);
+        Task UploadFileAsync(string fileName, Stream fileStream);   // Method to upload a file
 
 
-        Task<IEnumerable<string>> GetAllFilesAsync();
+        Task<IEnumerable<string>> GetAllFilesAsync();               // Method to list all files in the directory
     }
 }
+
+//boring interface

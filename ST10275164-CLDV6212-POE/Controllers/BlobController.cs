@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Azure.Storage.Blobs;
 
+//Codeproject.com. (2025). CodeProject. [online]
+//Available at:
+//https://www.codeproject.com/Articles/490178/How-to-Use-Azure-Blob-Storage-with-Azure-Web-Sites [Accessed 24 Aug. 2025].
+
 namespace ST10275164_CLDV6212_POE.Controllers
 {
     public class BlobController : Controller
@@ -14,8 +18,10 @@ namespace ST10275164_CLDV6212_POE.Controllers
             _logger = logger;
         }
 
-        // GET: /Blob/Image/filename.jpg
-        [HttpGet("Blob/Image/{fileName}")]
+        
+        [HttpGet("Blob/Image/{fileName}")]  //Stack Overflow. (n.d.). HttpPost vs HttpGet attributes in MVC: Why use HttpPost?
+                                            //[online] Available at:
+                                            //https://stackoverflow.com/questions/5332275/httppost-vs-httpget-attributes-in-mvc-why-use-httppost.‌
         public async Task<IActionResult> Image(string fileName)
         {
             try
@@ -28,7 +34,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 var containerClient = _blobServiceClient.GetBlobContainerClient("product-images");
                 var blobClient = containerClient.GetBlobClient(fileName);
 
-                // Check if blob exists
+                // Checks if blob exists
                 var exists = await blobClient.ExistsAsync();
                 if (!exists.Value)
                 {
@@ -36,7 +42,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                     return NotFound();
                 }
 
-                // Download the blob
+                // Downloads the blob
                 var response = await blobClient.DownloadAsync();
                 var contentType = response.Value.Details.ContentType ?? "application/octet-stream";
 

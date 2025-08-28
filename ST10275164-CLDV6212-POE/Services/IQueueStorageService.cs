@@ -2,8 +2,8 @@
 {
     public interface IQueueStorageService
     {
-        Task SendMessageAsync(string queueName, string message);
-        Task<IEnumerable<string>> GetMessagesAsync(string queueName);
-        Task<IEnumerable<string>> GetQueuesAsync();
+        Task SendMessageAsync(string queueName, string message);            //send message to queue
+        Task<IEnumerable<string>> GetMessagesAsync(string queueName);       //get messages from queue
+        Task<IEnumerable<string>> GetQueuesAsync();                         //list of queues
     }
 }

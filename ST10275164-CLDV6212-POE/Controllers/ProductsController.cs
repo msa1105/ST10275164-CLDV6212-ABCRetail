@@ -8,17 +8,17 @@ namespace ST10275164_CLDV6212_POE.Controllers
     {
         private readonly ITableStorageService _tableStorageService;
         private readonly IBlobStorageService _blobStorageService;
-        private readonly IQueueStorageService _queueStorageService; // --- FIX: Declare the service ---
+        private readonly IQueueStorageService _queueStorageService; 
 
-        // --- FIX: Inject the service in the constructor ---
+        
         public ProductsController(ITableStorageService tableStorageService, IBlobStorageService blobStorageService, IQueueStorageService queueStorageService)
         {
             _tableStorageService = tableStorageService;
             _blobStorageService = blobStorageService;
-            _queueStorageService = queueStorageService; // --- FIX: Assign the service ---
+            _queueStorageService = queueStorageService; 
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index() // (Microsoft, 2024: Asynchronous Programming)
         {
             var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
             return View(products);
@@ -33,7 +33,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product, IFormFile imageFile)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid) // (Microsoft, 2024: Model Validation)
             {
                 if (imageFile != null && imageFile.Length > 0)
                 {
@@ -51,7 +51,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
                 await _tableStorageService.UpsertEntityAsync(product);
 
-                // This line will now work correctly
+                
                 await _queueStorageService.SendMessageAsync("product-events", $"New Product Created: {product.Name} (ID: {product.ProductId})");
 
                 return RedirectToAction(nameof(Index));

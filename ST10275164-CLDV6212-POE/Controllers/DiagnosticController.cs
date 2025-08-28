@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿//This entire page was provided to me by ChatGPT to test my project without manually entering information and entities
+
+using Microsoft.AspNetCore.Mvc;
 using ST10275164_CLDV6212_POE.Services;
 using ST10275164_CLDV6212_POE.Models;
 using Azure.Data.Tables;
@@ -48,14 +50,14 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
             try
             {
-                // Test Table Storage Connection
+                
                 results.Add("=== TABLE STORAGE TEST ===");
                 await foreach (var table in _tableServiceClient.QueryAsync())
                 {
                     results.Add($"Found table: {table.Name}");
                 }
 
-                // Test creating a customer
+                
                 var testCustomer = new Customer
                 {
                     CustomerId = Guid.NewGuid().ToString(),
@@ -68,11 +70,11 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 await _tableStorageService.UpsertEntityAsync(testCustomer);
                 results.Add($"✅ Successfully created test customer: {testCustomer.Name}");
 
-                // Retrieve all customers
+                
                 var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
                 results.Add($"✅ Retrieved {customers.Count} customers from storage");
 
-                foreach (var customer in customers.Take(5)) // Show first 5
+                foreach (var customer in customers.Take(5)) 
                 {
                     results.Add($"  - Customer: {customer.Name} ({customer.Email})");
                 }
@@ -85,14 +87,14 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
             try
             {
-                // Test Blob Storage Connection
+                
                 results.Add("\n=== BLOB STORAGE TEST ===");
                 await foreach (var container in _blobServiceClient.GetBlobContainersAsync())
                 {
                     results.Add($"Found container: {container.Name}");
                 }
 
-                // Test blob upload
+                
                 var testContent = "This is a test file created at " + DateTime.Now;
                 using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(testContent));
                 var fileName = $"test-{DateTime.Now:yyyyMMddHHmmss}.txt";

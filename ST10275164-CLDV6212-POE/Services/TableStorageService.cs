@@ -15,14 +15,14 @@ namespace ST10275164_CLDV6212_POE.Services
             _logger = logger;
         }
 
-        private async Task<TableClient> GetTableClient(string tableName)
+        private async Task<TableClient> GetTableClient(string tableName) 
         {
             try
             {
-                _logger.LogInformation($"Getting table client for: {tableName}");
+                _logger.LogInformation($"Getting table client for: {tableName}");           //Logging for better error handling kindly showed to me by ChatGPT
                 var tableClient = _tableServiceClient.GetTableClient(tableName);
 
-                _logger.LogInformation($"Creating table if not exists: {tableName}");
+                _logger.LogInformation($"Creating table if not exists: {tableName}");           
                 var response = await tableClient.CreateIfNotExistsAsync();
 
                 if (response != null)

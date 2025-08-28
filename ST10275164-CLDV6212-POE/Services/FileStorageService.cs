@@ -14,8 +14,7 @@ namespace ST10275164_CLDV6212_POE.Services
             _shareServiceClient = shareServiceClient;
         }
 
-        // NEW METHOD IMPLEMENTATION
-        public async Task<IEnumerable<string>> GetAllFilesAsync()
+        public async Task<IEnumerable<string>> GetAllFilesAsync()                   //list all files in the directory
         {
             var shareClient = _shareServiceClient.GetShareClient(ShareName);
             var directoryClient = shareClient.GetDirectoryClient(DirectoryName);
@@ -24,7 +23,7 @@ namespace ST10275164_CLDV6212_POE.Services
 
             await foreach (ShareFileItem file in directoryClient.GetFilesAndDirectoriesAsync())
             {
-                fileNames.Add(file.Name);
+                fileNames.Add(file.Name);                                           // Add each file name to the list
             }
 
             return fileNames;
@@ -32,15 +31,15 @@ namespace ST10275164_CLDV6212_POE.Services
 
         public async Task UploadFileAsync(string fileName, Stream fileStream)
         {
-            var shareClient = _shareServiceClient.GetShareClient(ShareName);
+            var shareClient = _shareServiceClient.GetShareClient(ShareName);        // Get a reference to the file share
             await shareClient.CreateIfNotExistsAsync();
 
-            var directoryClient = shareClient.GetDirectoryClient(DirectoryName);
+            var directoryClient = shareClient.GetDirectoryClient(DirectoryName);    // Get a reference to the directory
             await directoryClient.CreateIfNotExistsAsync();
 
-            var fileClient = directoryClient.GetFileClient(fileName);
+            var fileClient = directoryClient.GetFileClient(fileName);               // Get a reference to the file
 
-            fileStream.Position = 0; // Ensure the stream is at the beginning
+            fileStream.Position = 0;                                                // Reset stream position always to 0
             await fileClient.CreateAsync(fileStream.Length);
             await fileClient.UploadRangeAsync(new Azure.HttpRange(0, fileStream.Length), fileStream);
         }

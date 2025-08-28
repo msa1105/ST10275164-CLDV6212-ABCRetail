@@ -1,5 +1,4 @@
-﻿// Enhanced Site JavaScript
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
 
     // Utility functions
     const debounce = (func, wait) => {

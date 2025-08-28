@@ -1,9 +1,4 @@
-/* Enhanced Site CSS with Mobile Responsiveness and Animations */
-
-/* Add your font import at the top */
 @import url('https://fonts.googleapis.com/css2?family=Sofia+Pro:wght@700&display=swap');
-
-/* Root Variables */
 :root {
     --primary-color: #1b6ec2;
     --secondary-color: #6c757d;
@@ -16,7 +11,6 @@
     --border-radius: 0.5rem;
 }
 
-/* Base Styles */
 * {
     box-sizing: border-box;
 }
@@ -36,7 +30,6 @@ body {
     flex-direction: column;
 }
 
-/* Enhanced Navigation Styles */
 .navbar {
     transition: var(--transition);
     backdrop-filter: blur(10px);
@@ -77,7 +70,6 @@ body {
         color: var(--primary-color);
     }
 
-/* Animated Navigation Links */
 .nav-link {
     position: relative;
     margin: 0 0.25rem;
@@ -115,7 +107,6 @@ body {
         transform: translateY(0);
     }
 
-/* Mobile Toggle Animation */
 .navbar-toggler {
     border: none !important;
     padding: 0.25rem 0.5rem;
@@ -138,7 +129,6 @@ body {
         border-radius: var(--border-radius);
     }
 
-/* Animated Hamburger */
 .navbar-toggler-icon {
     background-image: none;
     position: relative;
@@ -183,7 +173,6 @@ body {
         transform: rotate(-45deg);
     }
 
-/* Navigation Icons Animation */
 .navbar .fas {
     font-size: 1.2rem;
     transition: var(--transition);
@@ -197,7 +186,6 @@ body {
         transform: scale(1.1);
     }
 
-/* Hero Section */
 .hero {
     position: relative;
     width: 100%;
@@ -218,7 +206,6 @@ body {
     z-index: -2;
 }
 
-/* Reactive Hero Content */
 .hero-content {
     text-align: center;
     z-index: 2;
@@ -231,13 +218,13 @@ body {
     -webkit-backdrop-filter: blur(5px);
     border-radius: 1rem;
     background: rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);*/
+    border: 1px solid rgba(255, 255, 255, 0.1); */
 }
 
     .hero-content h1 {
-        font-family: 'Sofia Pro', sans-serif; /* Set the font family */
-        font-style: italic; /* Set the font style to italic */
-        font-weight: bold; /* Set the font weight to bold */
+        font-family: 'Sofia Pro', sans-serif; 
+        font-style: italic; 
+        font-weight: bold; 
         font-size: clamp(2rem, 7vw, 5rem);
         margin-bottom: 1rem;
         line-height: 0.9;
@@ -295,7 +282,7 @@ body {
             transform: translateY(-1px);
         }
 
-/* Product Grid Styles */
+
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -355,7 +342,7 @@ body {
     color: var(--primary-color);
 }
 
-/* Fade-in Animation */
+
 .fade-in {
     animation: fadeInUp 1s ease-out;
 }

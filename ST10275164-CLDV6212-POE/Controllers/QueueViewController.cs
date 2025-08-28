@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ST10275164_CLDV6212_POE.Models; // Add this using directive for the models
+using ST10275164_CLDV6212_POE.Models; 
 using ST10275164_CLDV6212_POE.Services;
 
 namespace ST10275164_CLDV6212_POE.Controllers
@@ -15,7 +15,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Use the new QueueViewModel to pass data to the view
+            
             var viewModel = new QueueViewModel
             {
                 QueueNames = await _queueStorageService.GetQueuesAsync() ?? new List<string>()
@@ -30,7 +30,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Use the new QueueDetailsViewModel to pass data to the view
+            
             var viewModel = new QueueDetailsViewModel
             {
                 QueueName = queueName,

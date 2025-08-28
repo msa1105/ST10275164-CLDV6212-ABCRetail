@@ -16,14 +16,13 @@ namespace ST10275164_CLDV6212_POE.Controllers
             _queueStorageService = queueStorageService;
         }
 
-        // NEW ACTION TO DISPLAY ALL ORDERS
         public async Task<IActionResult> Index()
         {
             var orders = await _tableStorageService.GetAllEntitiesAsync<Order>();
             var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
             var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
 
-            // Use ToDictionary for efficient lookups
+            // Using ToDictionary for efficient lookups when mapping names
             var customerDict = customers.ToDictionary(c => c.RowKey, c => c.Name);
             var productDict = products.ToDictionary(p => p.RowKey, p => p.Name);
 
@@ -39,7 +38,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return View(orderViewModels);
         }
 
-        // GET: Orders/Create
+    
         public async Task<IActionResult> Create()
         {
             var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
@@ -49,7 +48,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return View();
         }
 
-        // POST: Orders/Create
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Order order)
@@ -61,7 +60,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 order.RowKey = order.OrderId;
                 order.OrderDate = DateTime.UtcNow;
 
-                // Update the following line in the POST: Orders/Create method
+                
                 await _queueStorageService.SendMessageAsync("orders-queue", $"New order created: {order.OrderId}");
                 await _tableStorageService.UpsertEntityAsync(order);
                 

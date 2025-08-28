@@ -7,13 +7,12 @@ namespace ST10275164_CLDV6212_POE.Controllers
     public class CustomersController : Controller
     {
         private readonly ITableStorageService _tableStorageService;
-        private readonly IQueueStorageService _queueStorageService; // --- FIX: Declare the service ---
-
-        // --- FIX: Inject the service in the constructor ---
+        private readonly IQueueStorageService _queueStorageService; 
+        
         public CustomersController(ITableStorageService tableStorageService, IQueueStorageService queueStorageService)
         {
             _tableStorageService = tableStorageService;
-            _queueStorageService = queueStorageService; // --- FIX: Assign the service ---
+            _queueStorageService = queueStorageService; 
         }
 
         public async Task<IActionResult> Index()
@@ -38,7 +37,6 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 customer.RowKey = customer.CustomerId;
                 await _tableStorageService.UpsertEntityAsync(customer);
 
-                // This line will now work correctly
                 await _queueStorageService.SendMessageAsync("customer-events", $"New Customer Created: {customer.Name} (ID: {customer.CustomerId})");
                 
                 return RedirectToAction(nameof(Index));

@@ -6,7 +6,7 @@
         public DateTime OrderDate { get; set; }
         public double TotalAmount { get; set; }
 
-        // Denormalized data for easy display
+        // Denormalised data to make it easier to display in the page
         public string CustomerName { get; set; }
         public string ProductName { get; set; }
     }

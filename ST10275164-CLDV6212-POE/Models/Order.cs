@@ -1,5 +1,4 @@
-﻿// Order.cs
-using Azure;
+﻿using Azure;
 using Azure.Data.Tables;
 using System.ComponentModel.DataAnnotations;
 
@@ -7,17 +6,16 @@ namespace ST10275164_CLDV6212_POE.Models
 {
     public class Order : ITableEntity
     {
-        // Property for business logic
         public string OrderId { get; set; } = string.Empty;
 
-        // Foreign keys linking to Customer and Product
+        // These are the foreign keys linking to Customer and Product
         [Required]
         [Display(Name = "Customer")]
         public string CustomerId { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Product")]
-        public string ProductId { get; set; } = string.Empty; // Assuming one product per order for simplicity
+        public string ProductId { get; set; } = string.Empty; // Im assuming one product per order for simplicity, can be expanded upon at a later date.
 
         [Display(Name = "Order Date")]
         public DateTime OrderDate { get; set; }
@@ -27,7 +25,7 @@ namespace ST10275164_CLDV6212_POE.Models
         [Display(Name = "Total Amount")]
         public double TotalAmount { get; set; }
 
-        // Properties required by ITableEntity
+        // These are the roperties that are required by ITableEntity
         public string PartitionKey { get; set; } = string.Empty;
         public string RowKey { get; set; } = string.Empty;
         public DateTimeOffset? Timestamp { get; set; }

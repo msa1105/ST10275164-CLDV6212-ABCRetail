@@ -19,16 +19,16 @@ namespace ST10275164_CLDV6212_POE.Services
             await queueClient.SendMessageAsync(message);
         }
 
-        public async Task<IEnumerable<string>> GetMessagesAsync(string queueName)
+        public async Task<IEnumerable<string>> GetMessagesAsync(string queueName) // Get messages from queue
         {
-            var queueClient = _queueServiceClient.GetQueueClient(queueName);
+            var queueClient = _queueServiceClient.GetQueueClient(queueName); // Get a reference to the queue
             var messages = new List<string>();
 
             if (await queueClient.ExistsAsync())
             {
                 // PeekMessagesAsync returns a Response<PeekedMessage[]> object.
                 var response = await queueClient.PeekMessagesAsync(maxMessages: 10);
-
+                                                                                        // !!!! This snippet was provided to me by ChatGPT to fix the issue of not displaying messages.
                 // --- THE FIX IS HERE ---
                 // We need to loop through response.Value, which contains the actual array of messages.
                 foreach (PeekedMessage message in response.Value)
@@ -36,7 +36,7 @@ namespace ST10275164_CLDV6212_POE.Services
                     messages.Add(message.Body.ToString());
                 }
             }
-            return messages;
+            return messages; // Return the list of message bodies
         }
 
         public async Task<IEnumerable<string>> GetQueuesAsync()
@@ -44,7 +44,7 @@ namespace ST10275164_CLDV6212_POE.Services
             var queueNames = new List<string>();
             await foreach (QueueItem queue in _queueServiceClient.GetQueuesAsync())
             {
-                queueNames.Add(queue.Name);
+                queueNames.Add(queue.Name); // Add each queue name to the list
             }
             return queueNames;
         }
