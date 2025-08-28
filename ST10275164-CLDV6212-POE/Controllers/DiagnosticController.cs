@@ -1,4 +1,5 @@
-﻿//This entire page was provided to me by ChatGPT to test my project without manually entering information and entities
+﻿//This entire page was provided to me by ChatGPT to test my project without manually entering information and entities 
+//chatgpt.com
 
 using Microsoft.AspNetCore.Mvc;
 using ST10275164_CLDV6212_POE.Services;

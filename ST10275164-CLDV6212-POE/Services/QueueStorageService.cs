@@ -28,7 +28,9 @@ namespace ST10275164_CLDV6212_POE.Services
             {
                 // PeekMessagesAsync returns a Response<PeekedMessage[]> object.
                 var response = await queueClient.PeekMessagesAsync(maxMessages: 10);
-                                                                                        // !!!! This snippet was provided to me by ChatGPT to fix the issue of not displaying messages.
+                // !!!! This snippet was provided to me by ChatGPT to fix the issue of not displaying messages
+                //and educate me on how to work with the PeekMessagesAsync method.
+                //chatgpt.com
                 // --- THE FIX IS HERE ---
                 // We need to loop through response.Value, which contains the actual array of messages.
                 foreach (PeekedMessage message in response.Value)

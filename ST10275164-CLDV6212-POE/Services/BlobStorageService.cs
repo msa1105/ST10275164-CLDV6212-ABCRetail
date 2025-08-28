@@ -113,3 +113,4 @@ namespace ST10275164_CLDV6212_POE.Services
 
 
 //I wasn't too sure how to build these best practice so I did alot of researching and had help from ChatGPT as well.
+//chatgpt.com
