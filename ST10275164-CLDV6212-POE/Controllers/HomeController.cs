@@ -20,13 +20,13 @@ namespace ST10275164_CLDV6212_POE.Controllers
         
         public async Task<IActionResult> Index()
         {
-            // Fetches all products, order them by timestamp, and take the most recent 3.
+            // this fetches all products then order them by timestamp and take the most recent 3
             var recentProducts = (await _tableStorageService.GetAllEntitiesAsync<Product>())
                                  .OrderByDescending(p => p.Timestamp)
                                  .Take(3)
                                  .ToList();
 
-            // Passes the list of recent products to the view.
+            // this passes the list of recent products to the view
             return View(recentProducts);
         }
 

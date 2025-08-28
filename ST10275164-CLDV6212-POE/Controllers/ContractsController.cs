@@ -71,14 +71,14 @@ namespace ST10275164_CLDV6212_POE.Controllers
     }
 }
 
-//Microsoft (2023) Asynchronous programming with async and await. Available at: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/ (Accessed: 28 August 2025).
+//Microsoft (2023) Asynchronous programming with async and await. Available at: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/ (Accessed: 25 August 2025).
 
-//Microsoft(2024a) Overview of ASP.NET Core MVC. Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-8.0 (Accessed: 28 August 2025).
+//Microsoft(2024a) Overview of ASP.NET Core MVC. Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-8.0 (Accessed: 25 August 2025).
 
 //Microsoft(2024b) Dependency injection in ASP.NET Core. Available at: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-8.0 (Accessed: 28 August 2025).
 
-//Microsoft(2024c) Language Integrated Query (LINQ). Available at: https://learn.microsoft.com/en-us/dotnet/csharp/linq/ (Accessed: 28 August 2025).
+//Microsoft(2024c) Language Integrated Query (LINQ). Available at: https://learn.microsoft.com/en-us/dotnet/csharp/linq/ (Accessed: 25 August 2025).
 
 //Microsoft(2024d) Prevent Cross-Site Request Forgery (XSRF/CSRF) attacks in ASP.NET Core. Available at: https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery?view=aspnetcore-8.0 (Accessed: 28 August 2025).
 
-//Microsoft(2024e) File uploads in ASP.NET Core. Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-8.0 (Accessed: 28 August 2025).
+//Microsoft(2024e) File uploads in ASP.NET Core. Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-8.0 (Accessed: 25 August 2025).

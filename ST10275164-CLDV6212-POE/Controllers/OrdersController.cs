@@ -22,7 +22,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
             var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
             var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
 
-            // Using ToDictionary for efficient lookups when mapping names
+            // using ToDictionary for efficient lookups when mapping names
             var customerDict = customers.ToDictionary(c => c.RowKey, c => c.Name);
             var productDict = products.ToDictionary(p => p.RowKey, p => p.Name);
 

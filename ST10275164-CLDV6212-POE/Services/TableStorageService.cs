@@ -19,9 +19,9 @@ namespace ST10275164_CLDV6212_POE.Services
         {
             try
             {
-                _logger.LogInformation($"Getting table client for: {tableName}");           //Logging for better error handling kindly showed to me by ChatGPT
-                var tableClient = _tableServiceClient.GetTableClient(tableName);
-
+                _logger.LogInformation($"Getting table client for: {tableName}");           //Logging for better error handling kindly showed to me by ChatGPT and implemented with help from
+                var tableClient = _tableServiceClient.GetTableClient(tableName);            //this stack overflow article: https://stackoverflow.com/questions/7923085/handling-errors-and-exceptions-in-asp-net-mvc
+                                                                                            //I plan on expanding the error catches etc. from table storage to a seperate page for admins later on
                 _logger.LogInformation($"Creating table if not exists: {tableName}");           
                 var response = await tableClient.CreateIfNotExistsAsync();
 

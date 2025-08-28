@@ -1,6 +1,6 @@
 namespace ST10275164_CLDV6212_POE.Models 
 
-    //This is a default class im scared to delete
+    //This is a default class im scared to delete because its tied to the error view
 
 {
     public class ErrorViewModel
