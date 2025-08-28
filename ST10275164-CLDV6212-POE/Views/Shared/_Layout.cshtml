@@ -7,9 +7,9 @@
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-    <!-- preload the video for better site performance -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />           <!--I used chatgpt to help me structure most of my cshtml
+                                                                                                                             code to be as close to best practice as possible-->
+     <!-- preload the video for better site performance -->
     <link rel="preload" href="~/videos/The Rolex Submariner - ROLEX (1080p, h264).mp4" as="video" type="video/mp4">
 </head>
 <body>
@@ -129,11 +129,11 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
+    <!-- this is where scripts for js are being kept -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Enhanced navigation scroll effect
+
         document.addEventListener('DOMContentLoaded', function() {
             const navbar = document.getElementById('mainNavbar');
             let lastScrollTop = 0;
@@ -141,14 +141,13 @@
             function handleScroll() {
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-                // Add scrolled class for styling
                 if (scrollTop > 50) {
                     navbar.classList.add('scrolled');
                 } else {
                     navbar.classList.remove('scrolled');
                 }
 
-                // Hide/show navbar on scroll (optional - uncomment if desired)
+                // Hide/show navbar on scroll (optional - uncomment if desired)  //will be fully implemented later, this snippet is also from chatgpt
                 /*
                 if (scrollTop > lastScrollTop && scrollTop > 100) {
                     navbar.style.transform = 'translateY(-100%)';
@@ -172,14 +171,14 @@
                 }
             });
 
-            // Mobile menu auto-close on link click
+            // mbile menu autocloses on link click, which i want to implement in all devices
             const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
             const navbarCollapse = document.querySelector('.navbar-collapse');
             const navbarToggler = document.querySelector('.navbar-toggler');
 
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
-                    if (window.innerWidth < 992) { // Only on mobile
+                    if (window.innerWidth < 992) { // this is only on mobile devices
                         const bsCollapse = new bootstrap.Collapse(navbarCollapse, {
                             toggle: false
                         });
@@ -188,7 +187,6 @@
                 });
             });
 
-            // Add loading animation to buttons
             const buttons = document.querySelectorAll('.btn');
             buttons.forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -196,7 +194,6 @@
                         this.style.position = 'relative';
                         this.style.overflow = 'hidden';
 
-                        // Create ripple effect
                         const ripple = document.createElement('span');
                         const rect = this.getBoundingClientRect();
                         const size = Math.max(rect.width, rect.height);
@@ -217,7 +214,7 @@
                 });
             });
 
-            // Smooth scroll for anchor links
+            // smoother scrill for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -231,7 +228,7 @@
                 });
             });
 
-            // Add intersection observer for fade-in animations
+            // this is an intersection observer for fade-in animations
             const observerOptions = {
                 threshold: 0.1,
                 rootMargin: '0px 0px -50px 0px'
@@ -246,13 +243,13 @@
                 });
             }, observerOptions);
 
-            // Observe elements for animation
+            // observing elements for animation use
             document.querySelectorAll('.container, .product-card, .card').forEach(el => {
                 observer.observe(el);
             });
         });
 
-        // Add ripple effect CSS
+        // adding ripple effect using css
         const style = document.createElement('style');
         style.textContent = `
             .ripple {
