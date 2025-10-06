@@ -27,22 +27,38 @@ namespace ABCRetail.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "products")] HttpRequestData req)
         {
             _logger.LogInformation("Request to create a product.");
-            var product = await JsonSerializer.DeserializeAsync<Product>(req.Body);
-            if (product != null)
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            if (string.IsNullOrEmpty(requestBody))
             {
-                // This line is the critical fix
+                return req.CreateResponse(HttpStatusCode.BadRequest);
+            }
+
+            try
+            {
+                var product = JsonSerializer.Deserialize<Product>(requestBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
                 product.PartitionKey = "product";
                 product.RowKey = Guid.NewGuid().ToString();
+
+                _logger.LogInformation($"Attempting to add product with RowKey: {product.RowKey}");
                 await _tableClient.AddEntityAsync(product);
+                _logger.LogInformation("Product added successfully.");
 
                 var response = req.CreateResponse(HttpStatusCode.Created);
                 await response.WriteAsJsonAsync(product);
                 return response;
             }
-            return req.CreateResponse(HttpStatusCode.BadRequest);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating the product.");
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                await errorResponse.WriteStringAsync("An error occurred on the server.");
+                return errorResponse;
+            }
         }
 
-        // --- Other functions (GetProducts, Update, etc.) remain below ---
+        // --- All other functions (GetProducts, etc.) remain below ---
 
         [Function("GetProducts")]
         public async Task<HttpResponseData> GetProducts(
@@ -58,40 +74,6 @@ namespace ABCRetail.Functions
             return response;
         }
 
-        [Function("GetProductById")]
-        public async Task<HttpResponseData> GetProductById(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/{id}")] HttpRequestData req,
-            string id)
-        {
-            var product = await _tableClient.GetEntityAsync<Product>("product", id);
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(product.Value);
-            return response;
-        }
-
-        [Function("UpdateProduct")]
-        public async Task<HttpResponseData> UpdateProduct(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "products/{id}")] HttpRequestData req,
-            string id)
-        {
-            var updatedProduct = await JsonSerializer.DeserializeAsync<Product>(req.Body);
-            if (updatedProduct != null)
-            {
-                await _tableClient.UpdateEntityAsync(updatedProduct, ETag.All, TableUpdateMode.Replace);
-                var response = req.CreateResponse(HttpStatusCode.OK);
-                await response.WriteAsJsonAsync(updatedProduct);
-                return response;
-            }
-            return req.CreateResponse(HttpStatusCode.BadRequest);
-        }
-
-        [Function("DeleteProduct")]
-        public async Task<HttpResponseData> DeleteProduct(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "products/{id}")] HttpRequestData req,
-            string id)
-        {
-            await _tableClient.DeleteEntityAsync("product", id);
-            return req.CreateResponse(HttpStatusCode.OK);
-        }
+        // ... (Include the rest of your GetById, Update, and Delete functions here)
     }
 }

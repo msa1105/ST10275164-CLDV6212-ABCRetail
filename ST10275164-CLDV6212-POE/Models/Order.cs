@@ -30,5 +30,8 @@ namespace ST10275164_CLDV6212_POE.Models
         public string RowKey { get; set; } = string.Empty;
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public string CustomerName { get; set; }
+        public string ProductName { get; set; }
+
     }
 }

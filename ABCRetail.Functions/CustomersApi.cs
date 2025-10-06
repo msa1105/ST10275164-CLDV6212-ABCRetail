@@ -1,4 +1,5 @@
 ﻿using ABCRetail.Functions.Models;
+using Azure;
 using Azure.Data.Tables;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -21,6 +22,44 @@ namespace ABCRetail.Functions
             _tableClient.CreateIfNotExists();
         }
 
+        [Function("CreateCustomer")]
+        public async Task<HttpResponseData> CreateCustomer(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers")] HttpRequestData req)
+        {
+            _logger.LogInformation("Request to create a customer.");
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            if (string.IsNullOrEmpty(requestBody))
+            {
+                return req.CreateResponse(HttpStatusCode.BadRequest);
+            }
+
+            try
+            {
+                var customer = JsonSerializer.Deserialize<Customer>(requestBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                customer.PartitionKey = "customer";
+                customer.RowKey = Guid.NewGuid().ToString();
+
+                _logger.LogInformation($"Attempting to add customer with RowKey: {customer.RowKey}");
+                await _tableClient.AddEntityAsync(customer);
+                _logger.LogInformation("Customer added successfully.");
+
+                var response = req.CreateResponse(HttpStatusCode.Created);
+                await response.WriteAsJsonAsync(customer);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating the customer.");
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                await errorResponse.WriteStringAsync("An error occurred on the server.");
+                return errorResponse;
+            }
+        }
+
+        // --- All other functions (GetCustomers, etc.) remain below ---
+
         [Function("GetCustomers")]
         public async Task<HttpResponseData> GetCustomers(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers")] HttpRequestData req)
@@ -35,24 +74,6 @@ namespace ABCRetail.Functions
             return response;
         }
 
-        [Function("CreateCustomer")]
-        public async Task<HttpResponseData> CreateCustomer(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers")] HttpRequestData req)
-        {
-            _logger.LogInformation("Request to create a customer.");
-            var customer = await JsonSerializer.DeserializeAsync<Customer>(req.Body);
-            if (customer != null)
-            {
-                // This line is the critical fix
-                customer.PartitionKey = "customer";
-                customer.RowKey = Guid.NewGuid().ToString();
-                await _tableClient.AddEntityAsync(customer);
-
-                var response = req.CreateResponse(HttpStatusCode.Created);
-                await response.WriteAsJsonAsync(customer);
-                return response;
-            }
-            return req.CreateResponse(HttpStatusCode.BadRequest);
-        }
+        // ... (Include the rest of your GetById, Update, and Delete functions here)
     }
 }
