@@ -36,7 +36,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Details(string queueName) // YOUR FIX APPLIED
+        public async Task<IActionResult> Details(string queueName) 
         {
             if (string.IsNullOrEmpty(queueName)) return NotFound();
             var client = _httpClientFactory.CreateClient();
@@ -59,7 +59,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 var content = new StringContent(messageContent, Encoding.UTF8, "text/plain");
                 await client.PostAsync($"{_apiUrl}/{queueName}/messages", content);
             }
-            return RedirectToAction(nameof(Details), new { queueName = queueName }); // YOUR FIX APPLIED
+            return RedirectToAction(nameof(Details), new { queueName = queueName }); 
         }
     }
 }

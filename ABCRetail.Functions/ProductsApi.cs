@@ -58,7 +58,7 @@ namespace ABCRetail.Functions
             }
         }
 
-        // --- All other functions (GetProducts, etc.) remain below ---
+      
 
         [Function("GetProducts")]
         public async Task<HttpResponseData> GetProducts(
@@ -74,6 +74,6 @@ namespace ABCRetail.Functions
             return response;
         }
 
-        // ... (Include the rest of your GetById, Update, and Delete functions here)
+       
     }
 }

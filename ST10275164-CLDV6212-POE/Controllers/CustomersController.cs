@@ -63,6 +63,5 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return View();
         }
 
-        // ... (Keep the rest of the controller methods as they are)
     }
 }

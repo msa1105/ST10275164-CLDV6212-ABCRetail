@@ -23,13 +23,13 @@ namespace ABCRetail.Functions
             _logger = logger;
             var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
 
-            // --- FIX: Using your exact table names ---
+         
             _ordersTableClient = new TableClient(connectionString, "Order");
             _customersTableClient = new TableClient(connectionString, "Customer");
             _productsTableClient = new TableClient(connectionString, "Product");
 
             // This ensures the app doesn't crash if the tables don't exist yet,
-            // but it will use your existing tables if the names match.
+            // but it will use existing tables if the names match.
             _ordersTableClient.CreateIfNotExists();
             _customersTableClient.CreateIfNotExists();
             _productsTableClient.CreateIfNotExists();

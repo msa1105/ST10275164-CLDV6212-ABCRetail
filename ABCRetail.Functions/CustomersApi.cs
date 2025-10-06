@@ -74,6 +74,5 @@ namespace ABCRetail.Functions
             return response;
         }
 
-        // ... (Include the rest of your GetById, Update, and Delete functions here)
     }
 }

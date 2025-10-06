@@ -14,8 +14,8 @@ namespace ST10275164_CLDV6212_POE.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _ordersApiUrl;
-        private readonly string _customersApiUrl; // Adjust these if your tables are named differently (e.g., "Customer" or "Product")
-        private readonly string _productsApiUrl;  // The FunctionApiUrl for products and customers would still be pluralized usually
+        private readonly string _customersApiUrl; 
+        private readonly string _productsApiUrl; 
         private readonly ILogger<OrdersController> _logger;
 
         public OrdersController(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<OrdersController> logger)
@@ -38,7 +38,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
         {
             var client = _httpClientFactory.CreateClient();
 
-            // Assuming your customers and products API endpoints still return lists
+           
             var customers = await client.GetFromJsonAsync<IEnumerable<Customer>>(_customersApiUrl, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             var products = await client.GetFromJsonAsync<IEnumerable<Product>>(_productsApiUrl, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 

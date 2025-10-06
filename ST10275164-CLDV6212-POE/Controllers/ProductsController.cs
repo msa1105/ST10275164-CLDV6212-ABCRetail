@@ -3,7 +3,7 @@ using ST10275164_CLDV6212_POE.Models;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using Azure.Storage.Blobs; // Add this
+using Azure.Storage.Blobs;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -74,7 +74,6 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return View(product);
         }
 
-        // --- All other methods remain unchanged ---
 
         public async Task<IActionResult> Index()
         {

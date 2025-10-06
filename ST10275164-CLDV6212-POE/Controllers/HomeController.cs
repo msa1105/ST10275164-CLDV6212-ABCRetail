@@ -15,7 +15,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
         public HomeController(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<HomeController> logger)
         {
             _httpClientFactory = httpClientFactory;
-            _apiUrl = configuration["FunctionApiUrl"] + "products";
+            _apiUrl = configuration["FunctionApiUrl"] + "products"; //makes sure to point to products api
             _logger = logger;
         }
 
