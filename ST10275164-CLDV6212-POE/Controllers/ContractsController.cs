@@ -1,6 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ST10275164_CLDV6212_POE.Models;
-using System.Net.Http.Json;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using ST10275164_CLDV6212_POE.Models; // Add this using statement
+using System.Net.Http.Json; // Add this using statement
 
 namespace ST10275164_CLDV6212_POE.Controllers
 {
@@ -15,10 +20,11 @@ namespace ST10275164_CLDV6212_POE.Controllers
             _apiUrl = configuration["FunctionApiUrl"] + "contracts";
         }
 
+        // --- UPDATED INDEX ACTION ---
         public async Task<IActionResult> Index()
         {
             var client = _httpClientFactory.CreateClient();
-            var contracts = await client.GetFromJsonAsync<List<ContractViewModel>>(_apiUrl); // YOUR FIX APPLIED
+            var contracts = await client.GetFromJsonAsync<IEnumerable<ContractViewModel>>(_apiUrl);
             return View(contracts ?? new List<ContractViewModel>());
         }
 
@@ -29,27 +35,41 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Upload(IFormFile file)
+        public async Task<IActionResult> Upload(IFormFile contractFile)
         {
-            if (file == null || file.Length == 0)
+            if (contractFile != null && contractFile.Length > 0)
             {
-                ModelState.AddModelError("File", "Please select a file.");
-                return View();
+                var client = _httpClientFactory.CreateClient();
+
+                using (var content = new MultipartFormDataContent())
+                {
+                    var fileContent = new StreamContent(contractFile.OpenReadStream());
+                    fileContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = "contractFile",
+                        FileName = contractFile.FileName
+                    };
+                    content.Add(fileContent);
+
+                    var response = await client.PostAsync(_apiUrl, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        ViewBag.Message = "File uploaded successfully!";
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        ModelState.AddModelError(string.Empty, $"API Error: {response.StatusCode} - {errorContent}");
+                    }
+                }
+            }
+            else
+            {
+                ModelState.AddModelError("contractFile", "Please select a file to upload.");
             }
 
-            var client = _httpClientFactory.CreateClient();
-            using var content = new MultipartFormDataContent();
-            using var fileStream = file.OpenReadStream();
-            content.Add(new StreamContent(fileStream), "file", file.FileName);
-
-            var response = await client.PostAsync(_apiUrl, content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return RedirectToAction("Index");
-            }
-
-            ModelState.AddModelError("File", "File upload failed.");
             return View();
         }
     }

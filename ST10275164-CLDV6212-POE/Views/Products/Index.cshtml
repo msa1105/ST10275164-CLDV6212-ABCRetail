@@ -9,7 +9,10 @@
     <a asp-action="Create" class="btn btn-primary">Create New Product</a>
 </div>
 
-<div class="product-grid">
+<div class="form-group mb-4">
+    <input type="text" id="productSearchInput" onkeyup="filterProducts()" placeholder="Search for products by name..." class="form-control" />
+</div>
+<div class="product-grid" id="productGrid">
     @foreach (var item in Model)
     {
         <div class="product-card">
@@ -30,3 +33,35 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        function filterProducts() {
+            // Get the search input value and convert it to uppercase for case-insensitive comparison
+            let input = document.getElementById('productSearchInput');
+            let filter = input.value.toUpperCase();
+
+            // Get the container for all the product cards
+            let grid = document.getElementById("productGrid");
+            let cards = grid.getElementsByClassName('product-card');
+
+            // Loop through all the product cards
+            for (let i = 0; i < cards.length; i++) {
+               
+                let title = cards[i].getElementsByTagName("h5")[0];
+                if (title) {
+                    // Get the text from the title
+                    let txtValue = title.textContent || title.innerText;
+
+                    // If the product name includes the search text, show the card
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        cards[i].style.display = "";
+                    } else {
+                        // Otherwise, hide it
+                        cards[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+}
