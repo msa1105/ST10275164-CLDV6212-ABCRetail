@@ -1,78 +1,64 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ST10275164_CLDV6212_POE.Models;
-using ST10275164_CLDV6212_POE.Services;
+using System.Net.Http.Json;
 
 namespace ST10275164_CLDV6212_POE.Controllers
 {
     public class OrdersController : Controller
     {
-        private readonly ITableStorageService _tableStorageService;
-        private readonly IQueueStorageService _queueStorageService;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _functionApiUrl;
 
-        public OrdersController(ITableStorageService tableStorageService, IQueueStorageService queueStorageService)
+        public OrdersController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _tableStorageService = tableStorageService;
-            _queueStorageService = queueStorageService;
+            _httpClientFactory = httpClientFactory;
+            _functionApiUrl = configuration["FunctionApiUrl"];
         }
 
         public async Task<IActionResult> Index()
         {
-            var orders = await _tableStorageService.GetAllEntitiesAsync<Order>();
-            var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
-            var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
-
-            // using ToDictionary for efficient lookups when mapping names
-            var customerDict = customers.ToDictionary(c => c.RowKey, c => c.Name);
-            var productDict = products.ToDictionary(p => p.RowKey, p => p.Name);
-
-            var orderViewModels = orders.Select(o => new OrderViewModel
-            {
-                OrderId = o.OrderId,
-                OrderDate = o.OrderDate,
-                TotalAmount = o.TotalAmount,
-                CustomerName = customerDict.ContainsKey(o.CustomerId) ? customerDict[o.CustomerId] : "N/A",
-                ProductName = productDict.ContainsKey(o.ProductId) ? productDict[o.ProductId] : "N/A"
-            }).ToList();
-
-            return View(orderViewModels);
+            var client = _httpClientFactory.CreateClient();
+            var orders = await client.GetFromJsonAsync<IEnumerable<Order>>($"{_functionApiUrl}orders");
+            return View(orders ?? new List<Order>());
         }
 
-    
         public async Task<IActionResult> Create()
         {
-            var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
-            var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
-            ViewBag.CustomerId = new SelectList(customers, "CustomerId", "Name");
-            ViewBag.ProductId = new SelectList(products, "ProductId", "Name");
-            return View();
+            var client = _httpClientFactory.CreateClient();
+
+            // Make two API calls to get the data for the dropdowns
+            var customers = await client.GetFromJsonAsync<IEnumerable<Customer>>($"{_functionApiUrl}customers");
+            var products = await client.GetFromJsonAsync<IEnumerable<Product>>($"{_functionApiUrl}products");
+
+            var viewModel = new CreateOrderViewModel
+            {
+                Customers = new SelectList(customers, "RowKey", "Name"),
+                Products = new SelectList(products, "RowKey", "Name")
+            };
+
+            return View(viewModel);
         }
 
-       
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Order order)
+        public async Task<IActionResult> Create(CreateOrderViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                order.OrderId = Guid.NewGuid().ToString();
-                order.PartitionKey = "Order";
-                order.RowKey = order.OrderId;
-                order.OrderDate = DateTime.UtcNow;
-
-                
-                await _queueStorageService.SendMessageAsync("orders-queue", $"New order created: {order.OrderId}");
-                await _tableStorageService.UpsertEntityAsync(order);
-                
-
+                var client = _httpClientFactory.CreateClient();
+                await client.PostAsJsonAsync($"{_functionApiUrl}orders", viewModel.Order);
                 return RedirectToAction(nameof(Index));
             }
 
-            var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
-            var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
-            ViewBag.CustomerId = new SelectList(customers, "CustomerId", "Name", order.CustomerId);
-            ViewBag.ProductId = new SelectList(products, "ProductId", "Name", order.ProductId);
-            return View(order);
+            // If the submission fails, we need to repopulate the dropdowns
+            var clientForDropdowns = _httpClientFactory.CreateClient();
+            var customers = await clientForDropdowns.GetFromJsonAsync<IEnumerable<Customer>>($"{_functionApiUrl}customers");
+            var products = await clientForDropdowns.GetFromJsonAsync<IEnumerable<Product>>($"{_functionApiUrl}products");
+            viewModel.Customers = new SelectList(customers, "RowKey", "Name", viewModel.Order.CustomerId);
+            viewModel.Products = new SelectList(products, "RowKey", "Name", viewModel.Order.ProductId);
+
+            return View(viewModel);
         }
     }
 }

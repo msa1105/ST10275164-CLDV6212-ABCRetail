@@ -1,24 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ST10275164_CLDV6212_POE.Models;
-using ST10275164_CLDV6212_POE.Services;
+using System.Net.Http.Json;
 
 namespace ST10275164_CLDV6212_POE.Controllers
 {
     public class CustomersController : Controller
     {
-        private readonly ITableStorageService _tableStorageService;
-        private readonly IQueueStorageService _queueStorageService; 
-        
-        public CustomersController(ITableStorageService tableStorageService, IQueueStorageService queueStorageService)
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _apiUrl;
+
+        public CustomersController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _tableStorageService = tableStorageService;
-            _queueStorageService = queueStorageService; 
+            _httpClientFactory = httpClientFactory;
+            _apiUrl = configuration["FunctionApiUrl"] + "customers";
         }
 
         public async Task<IActionResult> Index()
         {
-            var customers = await _tableStorageService.GetAllEntitiesAsync<Customer>();
-            return View(customers);
+            var client = _httpClientFactory.CreateClient();
+            var customers = await client.GetFromJsonAsync<IEnumerable<Customer>>(_apiUrl);
+            return View(customers ?? new List<Customer>());
         }
 
         public IActionResult Create()
@@ -28,17 +29,12 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Customer customer)
+        public async Task<IActionResult> Create([Bind("Name,Email,Phone,Address")] Customer customer)
         {
             if (ModelState.IsValid)
             {
-                customer.CustomerId = Guid.NewGuid().ToString();
-                customer.PartitionKey = "Customer";
-                customer.RowKey = customer.CustomerId;
-                await _tableStorageService.UpsertEntityAsync(customer);
-
-                await _queueStorageService.SendMessageAsync("customer-events", $"New Customer Created: {customer.Name} (ID: {customer.CustomerId})");
-                
+                var client = _httpClientFactory.CreateClient();
+                await client.PostAsJsonAsync(_apiUrl, customer);
                 return RedirectToAction(nameof(Index));
             }
             return View(customer);

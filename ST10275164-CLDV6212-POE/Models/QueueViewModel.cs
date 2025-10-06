@@ -2,6 +2,6 @@
 {
     public class QueueViewModel
     {
-        public IEnumerable<string> QueueNames { get; set; } = new List<string>();
+        public List<string> QueueNames { get; set; } = new List<string>();
     }
 }

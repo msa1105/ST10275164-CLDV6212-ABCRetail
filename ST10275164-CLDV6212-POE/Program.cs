@@ -2,7 +2,8 @@ using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
 using Azure.Storage.Files.Shares;
-using ST10275164_CLDV6212_POE.Services;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,17 +19,7 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Azure Storage connection string is not configured.");
 }
 
-// Register Azure Clients
-builder.Services.AddSingleton(x => new TableServiceClient(connectionString));
-builder.Services.AddSingleton(x => new BlobServiceClient(connectionString));
-builder.Services.AddSingleton(x => new QueueServiceClient(connectionString));
-builder.Services.AddSingleton(x => new ShareServiceClient(connectionString));
-
-// Register our custom services
-builder.Services.AddSingleton<ITableStorageService, TableStorageService>();
-builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
-builder.Services.AddSingleton<IQueueStorageService, QueueStorageService>();
-builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+builder.Services.AddHttpClient();
 
 // Add logging
 builder.Services.AddLogging(logging =>

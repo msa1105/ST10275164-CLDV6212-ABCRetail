@@ -3,6 +3,6 @@
     public class QueueDetailsViewModel
     {
         public string QueueName { get; set; }
-        public IEnumerable<string> Messages { get; set; } = new List<string>();
+        public List<string> Messages { get; set; } = new List<string>();
     }
 }

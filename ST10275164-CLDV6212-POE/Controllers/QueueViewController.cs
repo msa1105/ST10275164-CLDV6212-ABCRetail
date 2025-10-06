@@ -1,43 +1,61 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ST10275164_CLDV6212_POE.Models; 
-using ST10275164_CLDV6212_POE.Services;
+using ST10275164_CLDV6212_POE.Models;
+using System.Net.Http.Json;
+using System.Text;
 
 namespace ST10275164_CLDV6212_POE.Controllers
 {
     public class QueueViewController : Controller
     {
-        private readonly IQueueStorageService _queueStorageService;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _apiUrl;
 
-        public QueueViewController(IQueueStorageService queueStorageService)
+        public QueueViewController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _queueStorageService = queueStorageService;
+            _httpClientFactory = httpClientFactory;
+            _apiUrl = configuration["FunctionApiUrl"] + "queues";
         }
 
         public async Task<IActionResult> Index()
         {
-            
-            var viewModel = new QueueViewModel
-            {
-                QueueNames = await _queueStorageService.GetQueuesAsync() ?? new List<string>()
-            };
+            var client = _httpClientFactory.CreateClient();
+            var queueNames = await client.GetFromJsonAsync<List<string>>(_apiUrl);
+            var viewModel = new QueueViewModel { QueueNames = queueNames ?? new List<string>() };
             return View(viewModel);
         }
 
-        public async Task<IActionResult> Details(string queueName)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(string queueName)
         {
-            if (string.IsNullOrEmpty(queueName))
+            if (!string.IsNullOrEmpty(queueName))
             {
-                return RedirectToAction(nameof(Index));
+                var client = _httpClientFactory.CreateClient();
+                await client.PostAsync($"{_apiUrl}/{queueName}", null);
             }
+            return RedirectToAction(nameof(Index));
+        }
 
-            
-            var viewModel = new QueueDetailsViewModel
-            {
-                QueueName = queueName,
-                Messages = await _queueStorageService.GetMessagesAsync(queueName) ?? new List<string>()
-            };
-
+        public async Task<IActionResult> Details(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+            var client = _httpClientFactory.CreateClient();
+            var messages = await client.GetFromJsonAsync<List<string>>($"{_apiUrl}/{id}/messages");
+            var viewModel = new QueueDetailsViewModel { QueueName = id, Messages = messages ?? new List<string>() };
             return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMessage(string queueName, string messageContent)
+        {
+            if (!string.IsNullOrEmpty(queueName) && !string.IsNullOrEmpty(messageContent))
+            {
+                var client = _httpClientFactory.CreateClient();
+                var content = new StringContent(messageContent, Encoding.UTF8, "text/plain");
+                await client.PostAsync($"{_apiUrl}/{queueName}/messages", content);
+            }
+            return RedirectToAction(nameof(Details), new { id = queueName });
         }
     }
 }

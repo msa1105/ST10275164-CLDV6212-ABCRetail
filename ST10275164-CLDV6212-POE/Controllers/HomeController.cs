@@ -1,33 +1,39 @@
 using Microsoft.AspNetCore.Mvc;
 using ST10275164_CLDV6212_POE.Models;
-using ST10275164_CLDV6212_POE.Services; 
 using System.Diagnostics;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace ST10275164_CLDV6212_POE.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _apiUrl;
         private readonly ILogger<HomeController> _logger;
-        private readonly ITableStorageService _tableStorageService; 
 
-        
-        public HomeController(ILogger<HomeController> logger, ITableStorageService tableStorageService)
+        public HomeController(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<HomeController> logger)
         {
+            _httpClientFactory = httpClientFactory;
+            _apiUrl = configuration["FunctionApiUrl"] + "products";
             _logger = logger;
-            _tableStorageService = tableStorageService;
         }
 
-        
         public async Task<IActionResult> Index()
         {
-            // this fetches all products then order them by timestamp and take the most recent 3
-            var recentProducts = (await _tableStorageService.GetAllEntitiesAsync<Product>())
-                                 .OrderByDescending(p => p.Timestamp)
-                                 .Take(3)
-                                 .ToList();
+            var client = _httpClientFactory.CreateClient();
+            IEnumerable<Product> products = new List<Product>();
+            try
+            {
+                products = await client.GetFromJsonAsync<IEnumerable<Product>>(_apiUrl, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch products for home page.");
+                // Return the view with an empty list if the API call fails
+            }
 
-            // this passes the list of recent products to the view
-            return View(recentProducts);
+            return View(products ?? new List<Product>());
         }
 
         public IActionResult Privacy()

@@ -1,29 +1,39 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ST10275164_CLDV6212_POE.Models;
-using ST10275164_CLDV6212_POE.Services;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace ST10275164_CLDV6212_POE.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly ITableStorageService _tableStorageService;
-        private readonly IBlobStorageService _blobStorageService;
-        private readonly IQueueStorageService _queueStorageService; 
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _apiUrl;
 
-        
-        public ProductsController(ITableStorageService tableStorageService, IBlobStorageService blobStorageService, IQueueStorageService queueStorageService)
+        public ProductsController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _tableStorageService = tableStorageService;
-            _blobStorageService = blobStorageService;
-            _queueStorageService = queueStorageService; 
+            _httpClientFactory = httpClientFactory;
+
+            // --- THIS IS THE CORRECTED LOGIC ---
+            var functionApiUrl = configuration["FunctionApiUrl"];
+            if (string.IsNullOrEmpty(functionApiUrl))
+            {
+                // This will throw a clear error if the setting is missing, preventing the confusing URI error.
+                throw new InvalidOperationException("The 'FunctionApiUrl' configuration setting is missing from appsettings.json.");
+            }
+            _apiUrl = $"{functionApiUrl.TrimEnd('/')}/products";
+            // --- END OF CORRECTION ---
         }
 
-        public async Task<IActionResult> Index() // (Microsoft, 2023: Asynchronous Programming)
+        // GET: Products
+        public async Task<IActionResult> Index()
         {
-            var products = await _tableStorageService.GetAllEntitiesAsync<Product>();
-            return View(products);
+            var client = _httpClientFactory.CreateClient();
+            var products = await client.GetFromJsonAsync<IEnumerable<Product>>(_apiUrl, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return View(products ?? new List<Product>());
         }
 
+        // ... rest of the methods remain the same
         public IActionResult Create()
         {
             return View();
@@ -31,52 +41,56 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Product product, IFormFile imageFile)
+        public async Task<IActionResult> Create([Bind("Name,Price,Quantity,Category,Availability")] Product product)
         {
-            if (ModelState.IsValid) // (Microsoft, 2024: Model Validation)
+            if (ModelState.IsValid)
             {
-                if (imageFile != null && imageFile.Length > 0)
-                {
-                    var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
-                    using (var stream = imageFile.OpenReadStream())
-                    {
-                        var imageUrl = await _blobStorageService.UploadFileToBlobAsync(uniqueFileName, stream);
-                        product.ImageUrl = imageUrl;
-                    }
-                }
-
-                product.ProductId = Guid.NewGuid().ToString();
-                product.PartitionKey = "Product";
-                product.RowKey = product.ProductId;
-
-                await _tableStorageService.UpsertEntityAsync(product);
-
-                
-                await _queueStorageService.SendMessageAsync("product-events", $"New Product Created: {product.Name} (ID: {product.ProductId})");
-
+                var client = _httpClientFactory.CreateClient();
+                await client.PostAsJsonAsync(_apiUrl, product);
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
         }
 
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Edit(string id)
         {
             if (id == null) return NotFound();
-            var product = await _tableStorageService.GetEntityAsync<Product>("Product", id);
+            var client = _httpClientFactory.CreateClient();
+            var product = await client.GetFromJsonAsync<Product>($"{_apiUrl}/{id}", new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (product == null) return NotFound();
             return View(product);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, [Bind("Name,Price,Quantity,Category,Availability,PartitionKey,RowKey,Timestamp,ETag")] Product product)
+        {
+            if (id != product.RowKey) return NotFound();
+            if (ModelState.IsValid)
+            {
+                var client = _httpClientFactory.CreateClient();
+                await client.PutAsJsonAsync($"{_apiUrl}/{id}", product);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(product);
+        }
+
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (id == null) return NotFound();
+            var client = _httpClientFactory.CreateClient();
+            var product = await client.GetFromJsonAsync<Product>($"{_apiUrl}/{id}", new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (product == null) return NotFound();
+            return View(product);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            var client = _httpClientFactory.CreateClient();
+            await client.DeleteAsync($"{_apiUrl}/{id}");
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
-
-//Microsoft (2023) Asynchronous programming with async and await. Available at: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/ (Accessed: 25 August 2025).
-
-//Microsoft(2024a) Overview of ASP.NET Core MVC. Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-8.0 (Accessed: 25 August 2025).
-
-//Microsoft(2024b) Dependency injection in ASP.NET Core. Available at: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-8.0 (Accessed: 28 August 2025).
-
-//Microsoft(2024c) Language Integrated Query (LINQ). Available at: https://learn.microsoft.com/en-us/dotnet/csharp/linq/ (Accessed: 25 August 2025).
-
-//Microsoft(2024d) Prevent Cross-Site Request Forgery (XSRF/CSRF) attacks in ASP.NET Core. Available at: https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery?view=aspnetcore-8.0 (Accessed: 28 August 2025).
-
-//Microsoft(2024e) File uploads in ASP.NET Core. Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-8.0 (Accessed: 25 August 2025).
