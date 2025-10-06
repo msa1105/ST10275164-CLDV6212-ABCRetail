@@ -1,4 +1,4 @@
-﻿@model ST10275164_CLDV6212_POE.Models.Order;
+﻿@model ST10275164_CLDV6212_POE.Models.Order
 
 @{
     ViewData["Title"] = "Create Order";
@@ -9,14 +9,17 @@
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+
             <div class="form-group mb-3">
-                <label asp-for="CustomerName" class="control-label">Customer</label>
-                <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId"><option>-- Select Customer --</option></select>
+                <label asp-for="CustomerId" class="control-label">Customer</label>
+                <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId"><option value="">-- Select Customer --</option></select>
+                <span asp-validation-for="CustomerId" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
-                <label asp-for="ProductName" class="control-label">Product</label>
-                <select asp-for="ProductId" class="form-control" asp-items="ViewBag.ProductId"><option>-- Select Product --</option></select>
+                <label asp-for="ProductId" class="control-label">Product</label>
+                <select asp-for="ProductId" class="form-control" asp-items="ViewBag.ProductId"><option value="">-- Select Product --</option></select>
+                <span asp-validation-for="ProductId" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
                 <label asp-for="TotalAmount" class="control-label"></label>

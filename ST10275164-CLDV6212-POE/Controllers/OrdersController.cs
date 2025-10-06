@@ -1,64 +1,93 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using ST10275164_CLDV6212_POE.Models;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace ST10275164_CLDV6212_POE.Controllers
 {
     public class OrdersController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _functionApiUrl;
+        private readonly string _ordersApiUrl;
+        private readonly string _customersApiUrl; // Adjust these if your tables are named differently (e.g., "Customer" or "Product")
+        private readonly string _productsApiUrl;  // The FunctionApiUrl for products and customers would still be pluralized usually
+        private readonly ILogger<OrdersController> _logger;
 
-        public OrdersController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public OrdersController(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<OrdersController> logger)
         {
             _httpClientFactory = httpClientFactory;
-            _functionApiUrl = configuration["FunctionApiUrl"];
+            _ordersApiUrl = configuration["FunctionApiUrl"] + "orders"; // This is the API route, not the table name
+            _customersApiUrl = configuration["FunctionApiUrl"] + "customers";
+            _productsApiUrl = configuration["FunctionApiUrl"] + "products";
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
             var client = _httpClientFactory.CreateClient();
-            var orders = await client.GetFromJsonAsync<IEnumerable<Order>>($"{_functionApiUrl}orders");
-            return View(orders ?? new List<Order>());
+            var orders = await client.GetFromJsonAsync<IEnumerable<OrderViewModel>>(_ordersApiUrl, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return View(orders ?? new List<OrderViewModel>());
         }
 
         public async Task<IActionResult> Create()
         {
             var client = _httpClientFactory.CreateClient();
 
-            // Make two API calls to get the data for the dropdowns
-            var customers = await client.GetFromJsonAsync<IEnumerable<Customer>>($"{_functionApiUrl}customers");
-            var products = await client.GetFromJsonAsync<IEnumerable<Product>>($"{_functionApiUrl}products");
+            // Assuming your customers and products API endpoints still return lists
+            var customers = await client.GetFromJsonAsync<IEnumerable<Customer>>(_customersApiUrl, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var products = await client.GetFromJsonAsync<IEnumerable<Product>>(_productsApiUrl, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            var viewModel = new CreateOrderViewModel
-            {
-                Customers = new SelectList(customers, "RowKey", "Name"),
-                Products = new SelectList(products, "RowKey", "Name")
-            };
+            ViewBag.CustomerId = new SelectList(customers, "RowKey", "Name");
+            ViewBag.ProductId = new SelectList(products, "RowKey", "Name");
 
-            return View(viewModel);
+            return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateOrderViewModel viewModel)
+        public async Task<IActionResult> Create([Bind("CustomerId,ProductId,TotalAmount")] Order order)
         {
             if (ModelState.IsValid)
             {
                 var client = _httpClientFactory.CreateClient();
-                await client.PostAsJsonAsync($"{_functionApiUrl}orders", viewModel.Order);
-                return RedirectToAction(nameof(Index));
+
+                var jsonContent = new StringContent(
+                    JsonSerializer.Serialize(order),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var response = await client.PostAsync(_ordersApiUrl, jsonContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError(string.Empty, $"API Error: {response.StatusCode} - {errorContent}");
+                }
+            }
+            else
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors);
+                foreach (var error in errors)
+                {
+                    _logger.LogError($"Validation Error: {error.ErrorMessage}");
+                }
             }
 
-            // If the submission fails, we need to repopulate the dropdowns
-            var clientForDropdowns = _httpClientFactory.CreateClient();
-            var customers = await clientForDropdowns.GetFromJsonAsync<IEnumerable<Customer>>($"{_functionApiUrl}customers");
-            var products = await clientForDropdowns.GetFromJsonAsync<IEnumerable<Product>>($"{_functionApiUrl}products");
-            viewModel.Customers = new SelectList(customers, "RowKey", "Name", viewModel.Order.CustomerId);
-            viewModel.Products = new SelectList(products, "RowKey", "Name", viewModel.Order.ProductId);
+            var customers = await _httpClientFactory.CreateClient().GetFromJsonAsync<IEnumerable<Customer>>(_customersApiUrl);
+            var products = await _httpClientFactory.CreateClient().GetFromJsonAsync<IEnumerable<Product>>(_productsApiUrl);
+            ViewBag.CustomerId = new SelectList(customers, "RowKey", "Name", order.CustomerId);
+            ViewBag.ProductId = new SelectList(products, "RowKey", "Name", order.ProductId);
 
-            return View(viewModel);
+            return View(order);
         }
     }
 }

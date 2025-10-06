@@ -21,6 +21,8 @@ if (string.IsNullOrEmpty(connectionString))
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddSingleton(x => new BlobServiceClient(connectionString));
+
 // Add logging
 builder.Services.AddLogging(logging =>
 {
