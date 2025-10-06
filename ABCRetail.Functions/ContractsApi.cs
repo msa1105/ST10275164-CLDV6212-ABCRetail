@@ -1,6 +1,7 @@
-﻿using Azure.Storage.Blobs;
+﻿using ABCRetail.Functions.Models;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using HttpMultipartParser; // ADD THIS LINE
+using HttpMultipartParser;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -23,19 +24,38 @@ namespace ABCRetail.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "contracts")] HttpRequestData req)
         {
             _logger.LogInformation("Request to list all contracts.");
-            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-            var blobServiceClient = new BlobServiceClient(connectionString);
-            var containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
 
-            var blobUris = new List<string>();
-            await foreach (var blobItem in containerClient.GetBlobsAsync())
+            try
             {
-                blobUris.Add(containerClient.GetBlobClient(blobItem.Name).Uri.ToString());
-            }
+                var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+                var blobServiceClient = new BlobServiceClient(connectionString);
+                var containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(blobUris);
-            return response;
+                // Create container if it doesn't exist
+                await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+                var contracts = new List<ContractViewModel>();
+                await foreach (var blobItem in containerClient.GetBlobsAsync())
+                {
+                    var blobClient = containerClient.GetBlobClient(blobItem.Name);
+                    contracts.Add(new ContractViewModel
+                    {
+                        FileName = blobItem.Name,
+                        FileUrl = blobClient.Uri.ToString()
+                    });
+                }
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                await response.WriteAsJsonAsync(contracts);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting contracts");
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                await errorResponse.WriteStringAsync("Error retrieving contracts");
+                return errorResponse;
+            }
         }
 
         [Function("UploadContract")]
@@ -46,14 +66,15 @@ namespace ABCRetail.Functions
 
             try
             {
-                // Use the new library to parse the request body
                 var parsedForm = await MultipartFormDataParser.ParseAsync(req.Body);
-                var file = parsedForm.Files.FirstOrDefault(); // Get the first file
+                var file = parsedForm.Files.FirstOrDefault();
 
                 if (file == null)
                 {
                     _logger.LogWarning("No file received in the upload request.");
-                    return req.CreateResponse(HttpStatusCode.BadRequest);
+                    var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                    await badResponse.WriteStringAsync("No file uploaded");
+                    return badResponse;
                 }
 
                 var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
@@ -62,8 +83,6 @@ namespace ABCRetail.Functions
                 await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
                 var blobClient = containerClient.GetBlobClient(file.FileName);
-
-                // Use the file's data stream to upload
                 await blobClient.UploadAsync(file.Data, new BlobHttpHeaders { ContentType = file.ContentType });
 
                 _logger.LogInformation($"Successfully uploaded {file.FileName}.");
@@ -72,7 +91,9 @@ namespace ABCRetail.Functions
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading contract.");
-                return req.CreateResponse(HttpStatusCode.InternalServerError);
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                await errorResponse.WriteStringAsync($"Error uploading contract: {ex.Message}");
+                return errorResponse;
             }
         }
     }

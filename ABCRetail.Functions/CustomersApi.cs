@@ -25,7 +25,6 @@ namespace ABCRetail.Functions
         public async Task<HttpResponseData> GetCustomers(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers")] HttpRequestData req)
         {
-            _logger.LogInformation("Request for all customers.");
             var customers = new List<Customer>();
             await foreach (var entity in _tableClient.QueryAsync<Customer>())
             {
@@ -44,6 +43,8 @@ namespace ABCRetail.Functions
             var customer = await JsonSerializer.DeserializeAsync<Customer>(req.Body);
             if (customer != null)
             {
+                // This line is the critical fix
+                customer.PartitionKey = "customer";
                 customer.RowKey = Guid.NewGuid().ToString();
                 await _tableClient.AddEntityAsync(customer);
 

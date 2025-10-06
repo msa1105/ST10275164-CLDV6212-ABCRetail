@@ -18,9 +18,8 @@ namespace ST10275164_CLDV6212_POE.Controllers
         public async Task<IActionResult> Index()
         {
             var client = _httpClientFactory.CreateClient();
-            var uris = await client.GetFromJsonAsync<List<string>>(_apiUrl);
-            var viewModel = new ContractViewModel { ContractUris = uris ?? new List<string>() };
-            return View(viewModel);
+            var contracts = await client.GetFromJsonAsync<List<ContractViewModel>>(_apiUrl); // YOUR FIX APPLIED
+            return View(contracts ?? new List<ContractViewModel>());
         }
 
         public IActionResult Upload()

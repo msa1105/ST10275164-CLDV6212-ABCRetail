@@ -36,12 +36,16 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string queueName) // YOUR FIX APPLIED
         {
-            if (string.IsNullOrEmpty(id)) return NotFound();
+            if (string.IsNullOrEmpty(queueName)) return NotFound();
             var client = _httpClientFactory.CreateClient();
-            var messages = await client.GetFromJsonAsync<List<string>>($"{_apiUrl}/{id}/messages");
-            var viewModel = new QueueDetailsViewModel { QueueName = id, Messages = messages ?? new List<string>() };
+            var messages = await client.GetFromJsonAsync<List<string>>($"{_apiUrl}/{queueName}/messages");
+            var viewModel = new QueueDetailsViewModel
+            {
+                QueueName = queueName,
+                Messages = messages ?? new List<string>()
+            };
             return View(viewModel);
         }
 
@@ -55,7 +59,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
                 var content = new StringContent(messageContent, Encoding.UTF8, "text/plain");
                 await client.PostAsync($"{_apiUrl}/{queueName}/messages", content);
             }
-            return RedirectToAction(nameof(Details), new { id = queueName });
+            return RedirectToAction(nameof(Details), new { queueName = queueName }); // YOUR FIX APPLIED
         }
     }
 }

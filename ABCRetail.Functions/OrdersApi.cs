@@ -1,5 +1,4 @@
 ﻿using ABCRetail.Functions.Models;
-using Azure;
 using Azure.Data.Tables;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -24,7 +23,7 @@ namespace ABCRetail.Functions
         {
             _logger.LogInformation("Request for all orders.");
             var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-            var tableClient = new TableClient(connectionString, "Order");
+            var tableClient = new TableClient(connectionString, "order");
 
             var orders = new List<Order>();
             await foreach (var entity in tableClient.QueryAsync<Order>())
@@ -41,33 +40,32 @@ namespace ABCRetail.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "orders")] HttpRequestData req)
         {
             _logger.LogInformation("Request to create an order.");
-            var newOrder = await JsonSerializer.DeserializeAsync<Order>(req.Body);
 
-            if (newOrder == null) return req.CreateResponse(HttpStatusCode.BadRequest);
+            try
+            {
+                var newOrder = await JsonSerializer.DeserializeAsync<Order>(req.Body);
+                if (newOrder == null) return req.CreateResponse(HttpStatusCode.BadRequest);
 
-            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-            var customerTable = new TableClient(connectionString, "customer");
-            var productTable = new TableClient(connectionString, "product");
-            var orderTable = new TableClient(connectionString, "order");
+                var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+                var orderTable = new TableClient(connectionString, "order");
+                await orderTable.CreateIfNotExistsAsync();
 
-            // --- Business Logic ---
-            // Get the full customer and product objects
-            var customer = await customerTable.GetEntityAsync<Customer>("customer", newOrder.CustomerId);
-            var product = await productTable.GetEntityAsync<Product>("product", newOrder.ProductId);
+                // This line is the critical fix
+                newOrder.PartitionKey = "order";
+                newOrder.RowKey = Guid.NewGuid().ToString();
+                newOrder.OrderDate = DateTime.UtcNow;
 
-            // Populate the names and calculate the price on the server
-            newOrder.CustomerId = customer.Value.Name;
-            newOrder.ProductId = product.Value.Name;
-            // --- End Business Logic ---
+                await orderTable.AddEntityAsync(newOrder);
 
-            newOrder.RowKey = Guid.NewGuid().ToString();
-            newOrder.OrderDate = DateTime.UtcNow;
-
-            await orderTable.AddEntityAsync(newOrder);
-
-            var response = req.CreateResponse(HttpStatusCode.Created);
-            await response.WriteAsJsonAsync(newOrder);
-            return response;
+                var response = req.CreateResponse(HttpStatusCode.Created);
+                await response.WriteAsJsonAsync(newOrder);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating order.");
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

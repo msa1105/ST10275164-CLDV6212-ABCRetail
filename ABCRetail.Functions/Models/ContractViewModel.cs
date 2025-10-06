@@ -2,6 +2,7 @@
 {
     public class ContractViewModel
     {
-        public List<string> ContractUris { get; set; } = new List<string>();
+        public string FileName { get; set; }
+        public string FileUrl { get; set; }
     }
 }

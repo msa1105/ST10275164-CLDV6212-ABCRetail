@@ -22,11 +22,32 @@ namespace ABCRetail.Functions
             _tableClient.CreateIfNotExists();
         }
 
+        [Function("CreateProduct")]
+        public async Task<HttpResponseData> CreateProduct(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "products")] HttpRequestData req)
+        {
+            _logger.LogInformation("Request to create a product.");
+            var product = await JsonSerializer.DeserializeAsync<Product>(req.Body);
+            if (product != null)
+            {
+                // This line is the critical fix
+                product.PartitionKey = "product";
+                product.RowKey = Guid.NewGuid().ToString();
+                await _tableClient.AddEntityAsync(product);
+
+                var response = req.CreateResponse(HttpStatusCode.Created);
+                await response.WriteAsJsonAsync(product);
+                return response;
+            }
+            return req.CreateResponse(HttpStatusCode.BadRequest);
+        }
+
+        // --- Other functions (GetProducts, Update, etc.) remain below ---
+
         [Function("GetProducts")]
         public async Task<HttpResponseData> GetProducts(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products")] HttpRequestData req)
         {
-            _logger.LogInformation("Request for all products.");
             var products = new List<Product>();
             await foreach (var entity in _tableClient.QueryAsync<Product>())
             {
@@ -42,29 +63,10 @@ namespace ABCRetail.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/{id}")] HttpRequestData req,
             string id)
         {
-            _logger.LogInformation($"Request for product with ID: {id}");
             var product = await _tableClient.GetEntityAsync<Product>("product", id);
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(product.Value);
             return response;
-        }
-
-        [Function("CreateProduct")]
-        public async Task<HttpResponseData> CreateProduct(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "products")] HttpRequestData req)
-        {
-            _logger.LogInformation("Request to create a product.");
-            var product = await JsonSerializer.DeserializeAsync<Product>(req.Body);
-            if (product != null)
-            {
-                product.RowKey = Guid.NewGuid().ToString();
-                await _tableClient.AddEntityAsync(product);
-
-                var response = req.CreateResponse(HttpStatusCode.Created);
-                await response.WriteAsJsonAsync(product);
-                return response;
-            }
-            return req.CreateResponse(HttpStatusCode.BadRequest);
         }
 
         [Function("UpdateProduct")]
@@ -72,7 +74,6 @@ namespace ABCRetail.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "products/{id}")] HttpRequestData req,
             string id)
         {
-            _logger.LogInformation($"Request to update product with ID: {id}");
             var updatedProduct = await JsonSerializer.DeserializeAsync<Product>(req.Body);
             if (updatedProduct != null)
             {
@@ -89,7 +90,6 @@ namespace ABCRetail.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "products/{id}")] HttpRequestData req,
             string id)
         {
-            _logger.LogInformation($"Request to delete product with ID: {id}");
             await _tableClient.DeleteEntityAsync("product", id);
             return req.CreateResponse(HttpStatusCode.OK);
         }
