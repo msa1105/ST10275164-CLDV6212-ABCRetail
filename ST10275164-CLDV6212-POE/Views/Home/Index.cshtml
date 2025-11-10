@@ -20,7 +20,7 @@
         @foreach (var product in Model)
         {
             <div class="product-card hover-lift">
-                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.RowKey" class="text-decoration-none">
+                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="text-decoration-none">
                     @if (!string.IsNullOrEmpty(product.ImageUrl))
                     {
                         <img src="@product.ImageUrl" alt="@product.Name" class="card-img-top">
