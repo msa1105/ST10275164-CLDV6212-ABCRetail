@@ -1,9 +1,5 @@
 # 🏬 ABC Retail Management Suite
 
-<p align="center">
-  <img src="https://i.ibb.co/4dZ8yXv/abc-retail-banner-dark.png" alt="ABC Retail Management Suite Banner" width="100%">
-</p>
-
 **A Cloud-Native Retail Management Platform**
 Built with **ASP.NET Core MVC** and **.NET Azure Functions**, designed for scalability, maintainability, and seamless retail operations.
 
