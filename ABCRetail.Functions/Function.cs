@@ -19,7 +19,7 @@ public class Function
     /* Visit https://aka.ms/sqltrigger to learn how to use this trigger binding
  //   [Function("Function")]
  //   public void Run(
- //       [SqlTrigger("[dbo].[table1]", "SqlConnectionString")] IReadOnlyList<SqlChange<ToDoItem>> changes,
+ //       [SqlTrigger("[dbo].[table1]", "SqlConnectionString")] IReadOnlyList<SqlChange<ToDoItem>> changes,        /// I removed this because it was unnecessary to log output in the console.
 //            FunctionContext context)
 //    {
  //       _logger.LogInformation("SQL Changes: " + JsonConvert.SerializeObject(changes));
