@@ -1,99 +1,139 @@
-# ABC Retail Management Suite
+ABC Retail Management Suite
 
-
-Welcome to the **ABC Retail Management Suite**, a comprehensive, cloud-native web application designed to streamline retail operations. Built with a robust, scalable architecture using **ASP.NET Core MVC** and **Microsoft Azure**, this solution offers powerful tools for managing every aspect of your retail business, from customer relationships to product inventory and sales orders.
+Welcome to the ABC Retail Management Suite, a comprehensive, cloud-native web application designed to streamline retail operations. Built with a robust, scalable architecture using an ASP.NET Core MVC frontend and a serverless .NET Azure Functions backend.
 
 <p align="center">
-  <a href="https://st10275164.azurewebsites.net" target="_blank">
-    <img src="https://img.shields.io/badge/Live-Demo-blue.svg?style=for-the-badge&logo=microsoft-azure" alt="Live Demo">
-  </a>
+<a href="https://www.google.com/search?q=https://st10275164webapp.azurewebsites.net" target="_blank">
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Live_Demo-st10275164webapp.azurewebsites.net-blue.svg%3Fstyle%3Dfor-the-badge%26logo%3Dmicrosoft-azure" alt="Live Demo">
+</a>
 </p>
 
----
+🚀 Cloud-Native Architecture
 
-## ✨ Key Features
+This solution is built using a decoupled, Platform-as-a-Service (PaaS) model to ensure scalability, maintainability, and efficient resource use.
 
-This application is packed with features to enhance productivity and provide deep insights into your business operations.
+Frontend: A user-facing ASP.NET Core MVC application hosted on Azure App Service. This service is responsible for rendering all UI and handling user input.
 
-### 🗂️ **Dynamic Data Management**
+Backend: A serverless .NET Azure Functions API that exposes all business logic and data operations via HTTP endpoints.
 
--   **Customer Relationship Management (CRM):** Easily add new customers and view a comprehensive list of all your clients. The system is designed for quick access and efficient management of customer information.
--   **Product Information Management (PIM):** Maintain a detailed catalog of your products. Add new items, update existing ones, and keep your inventory organized and easily accessible.
--   **Order Processing:** A streamlined interface for creating and viewing customer orders. Link products to customers seamlessly and keep track of all sales transactions.
--   **Contract Handling:** Upload, store, and manage important business contracts. All documents are securely stored in the cloud for easy retrieval.
+Data Storage: The backend API communicates with a suite of specialized Azure storage services:
 
-### ☁️ **Cloud-Powered Architecture**
+Azure SQL Database: The primary database for all structured, relational data (Customers, Products, Orders), accessed via Entity Framework Core.
 
--   **Azure Table Storage:** Serves as the primary database for storing structured NoSQL data like customer, product, and order information, ensuring high availability and scalability.
--   **Azure Blob Storage & File Storage:** Provides secure and scalable storage for all your business documents, including product images and signed contracts.
--   **Azure Queue Storage:** Decouples application components and enables asynchronous communication. Every major action—like creating a new customer or uploading a contract—generates a message, ensuring reliable and traceable event handling.
+Azure Blob Storage: Used to store unstructured data, such as product images.
 
-### 🛠️ **Advanced System Diagnostics**
+Azure File Storage: Used to store business documents like contracts.
 
--   **Cloud Connection Testing:** An integrated diagnostic tool to verify the connection status of all underlying Azure services, ensuring your application is always running smoothly.
--   **Event Queue Monitoring:** A dedicated view to monitor messages in the Azure Queue. This provides transparency into the system's background processes and helps in debugging and auditing.
+Azure Queue Storage: Used for asynchronous event messaging and auditing.
 
----
+This decoupled design means the frontend web application has no direct access to the database; it communicates exclusively with the secure Azure Functions API.
 
-## 🚀 Getting Started
+✨ Key Features
 
-To get this project up and running on your local machine, you'll need to have the following prerequisites installed:
+This application provides a full suite of tools for managing retail operations:
 
--   [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
--   [Visual Studio 2022](https://visualstudio.microsoft.com/) or another compatible IDE
--   An active **Microsoft Azure subscription**
+Customer Management (CRM): Easily add new customers and view a comprehensive list of all clients, stored in Azure SQL.
 
-### **Configuration**
+Product Management (PIM): A full CRUD (Create, Read, Update, Delete) module for products.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/ST10275164/ST10275164-CLDV6212-ABCRetail.git](https://github.com/ST10275164/ST10275164-CLDV6212-ABCRetail.git)
-    ```
-2.  **Set up Azure services:**
-    -   Create an Azure Storage Account.
-    -   Within the storage account, create the necessary **tables** (`Customers`, `Products`, `Orders`), **blob containers**, **file shares**, and **queues** (`customer-events`, `contract-events`, etc.).
-3.  **Configure connection strings:**
-    -   In the `appsettings.json` file, update the connection strings for your Azure Storage services. It is highly recommended to use `secrets.json` for local development to keep your credentials secure.
+Upload product images directly to Azure Blob Storage.
 
-    ```json
-    {
-      "ConnectionStrings": {
-        "AzureStorage": "DefaultEndpointsProtocol=https;AccountName=your_account_name;AccountKey=your_account_key;EndpointSuffix=core.windows.net"
-      },
-      "StorageAccountName": "your_account_name"
+Edit and delete existing product listings.
+
+Order Processing: A streamlined interface for creating and viewing customer orders, linking Customers and Products from the Azure SQL database.
+
+Contract Handling: Upload, store, and manage important business contracts. All documents are securely stored in Azure File Storage for easy retrieval.
+
+Event Queue Monitoring: A dedicated view to monitor messages in Azure Queue Storage. This provides transparency into the system's background processes and helps in debugging and auditing.
+
+🔧 Technology Stack
+
+This project is built on a modern, robust technology stack:
+
+Component
+
+Technology
+
+Frontend
+
+C#, ASP.NET Core 8.0 MVC, HTML5, CSS, Bootstrap
+
+Backend API
+
+.NET 8.0 Azure Functions (Isolated Worker)
+
+Hosting
+
+Azure App Service (Frontend), Azure Functions (Backend)
+
+Database
+
+Azure SQL Database
+
+Data Access
+
+Entity Framework Core 8.0
+
+File Storage
+
+Azure Blob Storage (for product images)
+
+
+
+Azure File Storage (for contracts)
+
+Messaging
+
+Azure Queue Storage
+
+🛠️ Local Setup & Configuration
+
+To run this project locally, you will need to set up both solutions and configure their respective settings.
+
+1. ABCRetail.Functions (Backend API)
+
+This project must be configured and running first.
+
+Set up the required Azure services:
+
+An Azure SQL Database (and run the migrations from the project).
+
+An Azure Storage Account (note the connection string).
+
+In the local.settings.json file (create one if it doesn't exist), add your connection strings:
+
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "YOUR_AZURE_STORAGE_CONNECTION_STRING",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "SqlConnectionString": "YOUR_AZURE_SQL_DATABASE_CONNECTION_STRING"
+  }
+}
+
+
+Run the ABCRetail.Functions project. It will typically start on http://localhost:7071. Note this URL.
+
+2. ST10275164-CLDV6212-POE (Frontend MVC App)
+
+Open the appsettings.json file in this project.
+
+Update the FunctionApiUrl to point to your locally running function app. Don't forget the /api/ at the end.
+
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
     }
-    ```
-
-4.  **Run the application:**
-    -   Open the solution in Visual Studio and press `F5` to build and run the project.
-
----
-
-## 🔧 Technology Stack
-
-This project is built on a modern, robust technology stack, ensuring high performance, scalability, and maintainability.
-
--   **Backend:** C#, ASP.NET Core MVC
--   **Frontend:** HTML5, CSS3, JavaScript, Bootstrap
--   **Cloud Platform:** Microsoft Azure
-    -   **Storage:** Azure Table Storage, Azure Blob Storage, Azure File Storage
-    -   **Messaging:** Azure Queue Storage
--   **Frameworks & Libraries:**
-    -   Entity Framework Core (for potential future relational database integration)
-    -   Azure.Data.Tables
-    -   Azure.Storage.Blobs
-    -   Azure.Storage.Files.Shares
-    -   Azure.Storage.Queues
+  },
+  "AllowedHosts": "*",
+  "AzureStorage": {
+    "ConnectionString": "YOUR_AZURE_STORAGE_CONNECTION_STRING"
+  },
+  "FunctionApiUrl": "http://localhost:7071/api/",
+  "StorageAccountName": "YOUR_STORAGE_ACCOUNT_NAME"
+}
 
 
----
-
-## 🤝 Contribution
-
-This project was developed as a comprehensive portfolio piece to showcase skills in cloud-native application development. While it is not actively seeking contributions, feedback and suggestions are always welcome.
-
----
-
-## 📜 License
-
-This project is open-source and available for personal and educational use. Please refer to the project's license for more details.
+Run the ST10275164-CLDV6212-POE project. It will now communicate with your local backend API, which in turn communicates with your cloud-based Azure services.
