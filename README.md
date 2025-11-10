@@ -1,99 +1,165 @@
-# ABC Retail Management Suite
-
-
-Welcome to the **ABC Retail Management Suite**, a comprehensive, cloud-native web application designed to streamline retail operations. Built with a robust, scalable architecture using **ASP.NET Core MVC** and **Microsoft Azure**, this solution offers powerful tools for managing every aspect of your retail business, from customer relationships to product inventory and sales orders.
+# 🏬 ABC Retail Management Suite
 
 <p align="center">
-  <a href="https://st10275164.azurewebsites.net" target="_blank">
-    <img src="https://img.shields.io/badge/Live-Demo-blue.svg?style=for-the-badge&logo=microsoft-azure" alt="Live Demo">
-  </a>
+  <img src="https://i.ibb.co/4dZ8yXv/abc-retail-banner-dark.png" alt="ABC Retail Management Suite Banner" width="100%">
 </p>
+
+**A Cloud-Native Retail Management Platform**
+Built with **ASP.NET Core MVC** and **.NET Azure Functions**, designed for scalability, maintainability, and seamless retail operations.
+
+<p align="center">
+  <a href="https://st10275164webapp.azurewebsites.net" target="_blank">
+    <img src="https://img.shields.io/badge/Live_Demo-View_Now-blue?style=for-the-badge&logo=microsoft-azure" alt="Live Demo">
+  </a>
+  <img src="https://img.shields.io/badge/.NET-8.0-purple?style=for-the-badge&logo=dotnet" alt=".NET 8.0">
+  <img src="https://img.shields.io/badge/Hosted_on-Azure-blue?style=for-the-badge&logo=microsoft-azure" alt="Azure">
+</p>
+
+---
+
+## 🚀 Cloud-Native Architecture
+
+A **decoupled, Platform-as-a-Service (PaaS)** model that maximizes **scalability**, **security**, and **performance**.
+
+| Component         | Description                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| **Frontend**      | ASP.NET Core MVC app hosted on **Azure App Service** – handles UI rendering and user interaction.        |
+| **Backend**       | Serverless **.NET Azure Functions** – processes business logic and data operations via secure HTTP APIs. |
+| **Database**      | **Azure SQL Database** – stores relational data such as Customers, Products, and Orders using EF Core.   |
+| **Blob Storage**  | Stores product images and other unstructured assets.                                                     |
+| **File Storage**  | Manages business contracts and related files.                                                            |
+| **Queue Storage** | Handles background events and auditing asynchronously.                                                   |
+
+> 🧩 The frontend **never directly accesses** the database — all interactions flow securely through the Azure Functions API.
 
 ---
 
 ## ✨ Key Features
 
-This application is packed with features to enhance productivity and provide deep insights into your business operations.
+### 👥 Customer Management (CRM)
 
-### 🗂️ **Dynamic Data Management**
+* Add and manage customers stored in **Azure SQL**
+* View all clients with a modern, paginated interface
 
--   **Customer Relationship Management (CRM):** Easily add new customers and view a comprehensive list of all your clients. The system is designed for quick access and efficient management of customer information.
--   **Product Information Management (PIM):** Maintain a detailed catalog of your products. Add new items, update existing ones, and keep your inventory organized and easily accessible.
--   **Order Processing:** A streamlined interface for creating and viewing customer orders. Link products to customers seamlessly and keep track of all sales transactions.
--   **Contract Handling:** Upload, store, and manage important business contracts. All documents are securely stored in the cloud for easy retrieval.
+### 🛒 Product Management (PIM)
 
-### ☁️ **Cloud-Powered Architecture**
+* Full **CRUD** operations (Create, Read, Update, Delete)
+* Upload product images directly to **Azure Blob Storage**
+* Manage and edit existing product listings
 
--   **Azure Table Storage:** Serves as the primary database for storing structured NoSQL data like customer, product, and order information, ensuring high availability and scalability.
--   **Azure Blob Storage & File Storage:** Provides secure and scalable storage for all your business documents, including product images and signed contracts.
--   **Azure Queue Storage:** Decouples application components and enables asynchronous communication. Every major action—like creating a new customer or uploading a contract—generates a message, ensuring reliable and traceable event handling.
+### 📦 Order Processing
 
-### 🛠️ **Advanced System Diagnostics**
+* Streamlined order creation and management
+* Automatically links **Customers** and **Products** in Azure SQL
 
--   **Cloud Connection Testing:** An integrated diagnostic tool to verify the connection status of all underlying Azure services, ensuring your application is always running smoothly.
--   **Event Queue Monitoring:** A dedicated view to monitor messages in the Azure Queue. This provides transparency into the system's background processes and helps in debugging and auditing.
+### 📂 Contract Handling
+
+* Upload and organize business contracts
+* Secure storage and access via **Azure File Storage**
+
+### 📬 Event Queue Monitoring
+
+* Real-time insights into **Azure Queue Storage**
+* Transparent logging and auditing of background operations
 
 ---
 
-## 🚀 Getting Started
+## 🧰 Technology Stack
 
-To get this project up and running on your local machine, you'll need to have the following prerequisites installed:
+| Layer           | Technology                                               |
+| --------------- | -------------------------------------------------------- |
+| **Frontend**    | ASP.NET Core MVC 8.0, HTML5, CSS3, Bootstrap             |
+| **Backend API** | .NET 8.0 **Azure Functions (Isolated Worker)**           |
+| **Hosting**     | Azure App Service (Frontend) • Azure Functions (Backend) |
+| **Database**    | Azure SQL Database                                       |
+| **ORM**         | Entity Framework Core 8.0                                |
+| **Storage**     | Azure Blob (Images), Azure File (Contracts)              |
+| **Messaging**   | Azure Queue Storage                                      |
 
--   [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
--   [Visual Studio 2022](https://visualstudio.microsoft.com/) or another compatible IDE
--   An active **Microsoft Azure subscription**
+---
 
-### **Configuration**
+## ⚙️ Local Setup & Configuration
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/ST10275164/ST10275164-CLDV6212-ABCRetail.git](https://github.com/ST10275164/ST10275164-CLDV6212-ABCRetail.git)
-    ```
-2.  **Set up Azure services:**
-    -   Create an Azure Storage Account.
-    -   Within the storage account, create the necessary **tables** (`Customers`, `Products`, `Orders`), **blob containers**, **file shares**, and **queues** (`customer-events`, `contract-events`, etc.).
-3.  **Configure connection strings:**
-    -   In the `appsettings.json` file, update the connection strings for your Azure Storage services. It is highly recommended to use `secrets.json` for local development to keep your credentials secure.
+### 1️⃣ Backend – `ABCRetail.Functions`
 
-    ```json
-    {
-      "ConnectionStrings": {
-        "AzureStorage": "DefaultEndpointsProtocol=https;AccountName=your_account_name;AccountKey=your_account_key;EndpointSuffix=core.windows.net"
-      },
-      "StorageAccountName": "your_account_name"
+Configure and launch the serverless API before running the frontend.
+
+#### 🔧 Setup Steps:
+
+1. Create Azure services:
+
+   * **Azure SQL Database**
+   * **Azure Storage Account**
+2. Add connection strings to `local.settings.json`:
+
+```json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "YOUR_AZURE_STORAGE_CONNECTION_STRING",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "SqlConnectionString": "YOUR_AZURE_SQL_DATABASE_CONNECTION_STRING"
+  }
+}
+```
+
+3. Run the project – typically available at:
+   👉 `http://localhost:7071`
+
+---
+
+### 2️⃣ Frontend – `ST10275164-CLDV6212-POE`
+
+Connect the MVC web app to your local Function API.
+
+#### 🧩 Update `appsettings.json`:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
     }
-    ```
+  },
+  "AllowedHosts": "*",
+  "AzureStorage": {
+    "ConnectionString": "YOUR_AZURE_STORAGE_CONNECTION_STRING"
+  },
+  "FunctionApiUrl": "http://localhost:7071/api/",
+  "StorageAccountName": "YOUR_STORAGE_ACCOUNT_NAME"
+}
+```
 
-4.  **Run the application:**
-    -   Open the solution in Visual Studio and press `F5` to build and run the project.
-
----
-
-## 🔧 Technology Stack
-
-This project is built on a modern, robust technology stack, ensuring high performance, scalability, and maintainability.
-
--   **Backend:** C#, ASP.NET Core MVC
--   **Frontend:** HTML5, CSS3, JavaScript, Bootstrap
--   **Cloud Platform:** Microsoft Azure
-    -   **Storage:** Azure Table Storage, Azure Blob Storage, Azure File Storage
-    -   **Messaging:** Azure Queue Storage
--   **Frameworks & Libraries:**
-    -   Entity Framework Core (for potential future relational database integration)
-    -   Azure.Data.Tables
-    -   Azure.Storage.Blobs
-    -   Azure.Storage.Files.Shares
-    -   Azure.Storage.Queues
-
+4. Run the MVC app — it will now connect to your **local backend API**, while all data persists securely in **Azure Cloud Services**.
 
 ---
 
-## 🤝 Contribution
+## 🌐 Live Deployment
 
-This project was developed as a comprehensive portfolio piece to showcase skills in cloud-native application development. While it is not actively seeking contributions, feedback and suggestions are always welcome.
+🚀 **Deployed Frontend:**
+🔗 [st10275164webapp.azurewebsites.net](https://st10275164webapp.azurewebsites.net)
+
+☁️ **Architecture:**
+Hosted using **Azure App Service** + **Azure Functions** + **Azure SQL** + **Blob/File/Queue Storage**
 
 ---
 
-## 📜 License
+## 🧑‍💻 Author
 
-This project is open-source and available for personal and educational use. Please refer to the project's license for more details.
+**Muhammed Saif Alexander**
+🎓 Student Number: ST10275164
+💡 Bachelor of Computer Science and Application Development
+🌍 South Africa
+
+---
+
+## 🪪 License
+
+This project is licensed under the **MIT License** – free to use, modify, and distribute.
+
+---
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Built_with-❤_and_.NET_8.0-purple?style=for-the-badge&logo=dotnet">
+</p>
