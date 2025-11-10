@@ -1,20 +1,20 @@
-﻿using Azure;
-using Azure.Data.Tables;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace ST10275164_CLDV6212_POE.Models
 {
-    public class Order : ITableEntity
+    public class Order
     {
-        public string OrderId { get; set; } = string.Empty;
+        // This will be the new Primary Key
+        public int OrderId { get; set; }
 
         [Required]
         [Display(Name = "Customer")]
-        public string CustomerId { get; set; } = string.Empty;
+        public int CustomerId { get; set; } // <-- Changed to int
 
         [Required]
         [Display(Name = "Product")]
-        public string ProductId { get; set; } = string.Empty;
+        public int ProductId { get; set; } // <-- Changed to int
 
         [Display(Name = "Order Date")]
         public DateTime OrderDate { get; set; }
@@ -23,11 +23,5 @@ namespace ST10275164_CLDV6212_POE.Models
         [Range(0.01, double.MaxValue, ErrorMessage = "Total amount must be greater than 0")]
         [Display(Name = "Total Amount")]
         public double TotalAmount { get; set; }
-
-        // ITableEntity properties
-        public string PartitionKey { get; set; } = string.Empty;
-        public string RowKey { get; set; } = string.Empty;
-        public DateTimeOffset? Timestamp { get; set; }
-        public ETag ETag { get; set; }
     }
 }

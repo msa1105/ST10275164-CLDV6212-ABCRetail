@@ -1,20 +1,20 @@
-﻿using Azure;
-using Azure.Data.Tables;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace ABCRetail.Functions.Models
 {
-    public class Order : ITableEntity
+    public class Order
     {
-        public string OrderId { get; set; } = string.Empty;
+        // This will be the new auto-incrementing Primary Key
+        public int OrderId { get; set; }
 
         [Required]
         [Display(Name = "Customer")]
-        public string CustomerId { get; set; } = string.Empty;
+        public int CustomerId { get; set; } // <-- Changed to int
 
         [Required]
         [Display(Name = "Product")]
-        public string ProductId { get; set; } = string.Empty;
+        public int ProductId { get; set; } // <-- Changed to int
 
         [Display(Name = "Order Date")]
         public DateTime OrderDate { get; set; }
@@ -24,10 +24,9 @@ namespace ABCRetail.Functions.Models
         [Display(Name = "Total Amount")]
         public double TotalAmount { get; set; }
 
-        // ITableEntity properties
-        public string PartitionKey { get; set; } = string.Empty;
-        public string RowKey { get; set; } = string.Empty;
-        public DateTimeOffset? Timestamp { get; set; }
-        public ETag ETag { get; set; }
+        // --- EF Core Navigation Properties ---
+        // These link the 'int' IDs above to the actual objects
+        public virtual Customer? Customer { get; set; }
+        public virtual Product? Product { get; set; }
     }
 }

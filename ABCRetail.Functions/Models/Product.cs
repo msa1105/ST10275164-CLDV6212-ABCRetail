@@ -1,13 +1,11 @@
-﻿using Azure;
-using Azure.Data.Tables;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace ABCRetail.Functions.Models;
-
-    public class Product : ITableEntity
+namespace ABCRetail.Functions.Models
+{
+    public class Product
     {
-
-        public string ProductId { get; set; } = string.Empty;
+        // This MUST be an int to match the Web App model
+        public int ProductId { get; set; }
 
         [Required]
         [Display(Name = "Product Name")]
@@ -21,14 +19,7 @@ namespace ABCRetail.Functions.Models;
         [Display(Name = "Product Description")]
         public string Description { get; set; } = string.Empty;
 
-        // This stores the public URL of the image from Blob Storage
         [Display(Name = "Image URL")]
         public string ImageUrl { get; set; } = string.Empty;
-
-        // Property is required by ITableEntity
-        public string PartitionKey { get; set; } = string.Empty;
-        public string RowKey { get; set; } = string.Empty;
-        public DateTimeOffset? Timestamp { get; set; }
-        public ETag ETag { get; set; }
     }
-
+}

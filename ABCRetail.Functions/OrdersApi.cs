@@ -1,5 +1,4 @@
 ﻿using ABCRetail.Functions.Models;
-using Azure.Data.Tables;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -8,56 +7,47 @@ using System.Text.Json;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore; // <-- Add this
+using System.IO;                   // <-- Add this
 
 namespace ABCRetail.Functions
 {
     public class OrdersApi
     {
         private readonly ILogger<OrdersApi> _logger;
-        private readonly TableClient _ordersTableClient;
-        private readonly TableClient _customersTableClient;
-        private readonly TableClient _productsTableClient;
+        private readonly AppDbContext _context; // <-- Change this
 
-        public OrdersApi(ILogger<OrdersApi> logger)
+        // Inject AppDbContext
+        public OrdersApi(ILogger<OrdersApi> logger, AppDbContext context)
         {
             _logger = logger;
-            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-
-         
-            _ordersTableClient = new TableClient(connectionString, "Order");
-            _customersTableClient = new TableClient(connectionString, "Customer");
-            _productsTableClient = new TableClient(connectionString, "Product");
-
-            // This ensures the app doesn't crash if the tables don't exist yet,
-            // but it will use existing tables if the names match.
-            _ordersTableClient.CreateIfNotExists();
-            _customersTableClient.CreateIfNotExists();
-            _productsTableClient.CreateIfNotExists();
+            _context = context; // <-- Assign this
         }
 
         [Function("GetOrders")]
         public async Task<HttpResponseData> GetOrders(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "orders")] HttpRequestData req)
         {
-            _logger.LogInformation("Request to get all orders.");
+            _logger.LogInformation("Request to get all orders (SQL).");
 
             try
             {
-                var allOrders = await _ordersTableClient.QueryAsync<Order>().ToListAsync();
-                var allCustomers = await _customersTableClient.QueryAsync<Customer>().ToListAsync();
-                var allProducts = await _productsTableClient.QueryAsync<Product>().ToListAsync();
-
-                var orderViewModels = from o in allOrders
-                                      join c in allCustomers on o.CustomerId equals c.RowKey
-                                      join p in allProducts on o.ProductId equals p.RowKey
-                                      select new OrderViewModel
-                                      {
-                                          OrderId = o.RowKey,
-                                          CustomerName = c.Name,
-                                          ProductName = p.Name,
-                                          TotalAmount = o.TotalAmount,
-                                          OrderDate = o.OrderDate
-                                      };
+                // --- NEW EF Core Logic ---
+                // This query uses the navigation properties to automatically join
+                // Customer and Product tables.
+                var orderViewModels = await _context.Orders
+                    .Include(o => o.Customer) // <-- Join Customer
+                    .Include(o => o.Product)  // <-- Join Product
+                    .Select(o => new OrderViewModel // Project to a view model
+                    {
+                        OrderId = o.OrderId.ToString(), // Convert int to string for view model if needed
+                        CustomerName = o.Customer.Name,
+                        ProductName = o.Product.Name,
+                        TotalAmount = o.TotalAmount,
+                        OrderDate = o.OrderDate
+                    })
+                    .ToListAsync();
+                // --- End EF Core Logic ---
 
                 var response = req.CreateResponse(HttpStatusCode.OK);
                 await response.WriteAsJsonAsync(orderViewModels);
@@ -65,7 +55,7 @@ namespace ABCRetail.Functions
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching orders.");
+                _logger.LogError(ex, "An error occurred while fetching orders (SQL).");
                 var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
                 await errorResponse.WriteStringAsync("An error occurred on the server.");
                 return errorResponse;
@@ -76,7 +66,7 @@ namespace ABCRetail.Functions
         public async Task<HttpResponseData> CreateOrder(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "orders")] HttpRequestData req)
         {
-            _logger.LogInformation("Request to create an order.");
+            _logger.LogInformation("Request to create an order (SQL).");
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
             if (string.IsNullOrEmpty(requestBody))
@@ -86,35 +76,24 @@ namespace ABCRetail.Functions
 
             var orderData = JsonSerializer.Deserialize<Order>(requestBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
+            // Create new Order object. The OrderId will be generated by the DB.
             var order = new Order
             {
-                PartitionKey = "order", // This can be anything, but "order" is a common convention
-                RowKey = Guid.NewGuid().ToString(),
-                CustomerId = orderData.CustomerId,
-                ProductId = orderData.ProductId,
+                CustomerId = orderData.CustomerId, // This is now an int
+                ProductId = orderData.ProductId,   // This is now an int
                 TotalAmount = orderData.TotalAmount,
-                OrderDate = DateTime.UtcNow, // Set the order date upon creation
-                Timestamp = DateTime.UtcNow
+                OrderDate = DateTime.UtcNow // Set the order date upon creation
             };
 
-            await _ordersTableClient.AddEntityAsync(order);
+            // --- NEW EF Core Logic ---
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+            // --- End EF Core Logic ---
 
             var response = req.CreateResponse(HttpStatusCode.Created);
-            await response.WriteAsJsonAsync(order);
+            await response.WriteAsJsonAsync(order); // Returns the new order, now with its DB-generated OrderId
             return response;
         }
     }
 }
-
-public static class AsyncEnumerableExtensions
-{
-    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> items)
-    {
-        var results = new List<T>();
-        await foreach (var item in items)
-        {
-            results.Add(item);
-        }
-        return results;
-    }
-}
+// You no longer need the custom AsyncEnumerableExtensions

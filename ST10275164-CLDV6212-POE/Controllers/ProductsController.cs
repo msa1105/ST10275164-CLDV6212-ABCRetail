@@ -13,52 +13,40 @@ namespace ST10275164_CLDV6212_POE.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _apiUrl;
-        private readonly BlobServiceClient _blobServiceClient; // Add Blob Service Client
+        private readonly BlobServiceClient _blobServiceClient;
 
-        // Inject BlobServiceClient into the constructor
         public ProductsController(IHttpClientFactory httpClientFactory, IConfiguration configuration, BlobServiceClient blobServiceClient)
         {
             _httpClientFactory = httpClientFactory;
             _apiUrl = configuration["FunctionApiUrl"] + "products";
-            _blobServiceClient = blobServiceClient; // Initialize it
+            _blobServiceClient = blobServiceClient;
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // Add IFormFile to accept the uploaded file
         public async Task<IActionResult> Create([Bind("Name,Price,Description")] Product product, IFormFile imageFile)
         {
+            // --- THIS IMAGE UPLOAD LOGIC IS UNAFFECTED ---
             if (ModelState.IsValid)
             {
-                // --- HANDLE IMAGE UPLOAD ---
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    // 1. Get a client for the blob container (it will be created if it doesn't exist)
                     var containerClient = _blobServiceClient.GetBlobContainerClient("product-images");
                     await containerClient.CreateIfNotExistsAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
-
-                    // 2. Create a unique name for the blob to avoid overwrites
                     var blobName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
                     var blobClient = containerClient.GetBlobClient(blobName);
-
-                    // 3. Upload the file to Blob Storage
                     using (var stream = imageFile.OpenReadStream())
                     {
                         await blobClient.UploadAsync(stream, true);
                     }
-
-                    // 4. Set the product's ImageUrl to the public URL of the blob
                     product.ImageUrl = blobClient.Uri.ToString();
                 }
-                // --- END OF IMAGE HANDLING ---
 
                 var client = _httpClientFactory.CreateClient();
-
                 var jsonContent = new StringContent(
                     JsonSerializer.Serialize(product),
                     Encoding.UTF8,
                     "application/json");
-
                 var response = await client.PostAsync(_apiUrl, jsonContent);
 
                 if (response.IsSuccessStatusCode)
@@ -74,7 +62,6 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return View(product);
         }
 
-
         public async Task<IActionResult> Index()
         {
             var client = _httpClientFactory.CreateClient();
@@ -87,9 +74,11 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Edit(string id)
+        // --- CHANGES START HERE ---
+
+        public async Task<IActionResult> Edit(int id) // <-- Changed to int
         {
-            if (id == null) return NotFound();
+            if (id == 0) return NotFound();
             var client = _httpClientFactory.CreateClient();
             var product = await client.GetFromJsonAsync<Product>($"{_apiUrl}/{id}", new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (product == null) return NotFound();
@@ -98,9 +87,11 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Name,Price,Description,ImageUrl,PartitionKey,RowKey,Timestamp,ETag")] Product product)
+        // Changed id to int, updated Bind properties
+        public async Task<IActionResult> Edit(int id, [Bind("ProductId,Name,Price,Description,ImageUrl")] Product product)
         {
-            if (id != product.RowKey) return NotFound();
+            if (id != product.ProductId) return NotFound(); // <-- Compare with ProductId
+
             if (ModelState.IsValid)
             {
                 var client = _httpClientFactory.CreateClient();
@@ -110,9 +101,9 @@ namespace ST10275164_CLDV6212_POE.Controllers
             return View(product);
         }
 
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int id) // <-- Changed to int
         {
-            if (id == null) return NotFound();
+            if (id == 0) return NotFound();
             var client = _httpClientFactory.CreateClient();
             var product = await client.GetFromJsonAsync<Product>($"{_apiUrl}/{id}", new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (product == null) return NotFound();
@@ -121,7 +112,7 @@ namespace ST10275164_CLDV6212_POE.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(int id) // <-- Changed to int
         {
             var client = _httpClientFactory.CreateClient();
             await client.DeleteAsync($"{_apiUrl}/{id}");

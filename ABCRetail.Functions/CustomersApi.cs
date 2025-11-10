@@ -1,32 +1,36 @@
 ﻿using ABCRetail.Functions.Models;
-using Azure;
-using Azure.Data.Tables;
+// using Azure; // <-- No longer needed
+// using Azure.Data.Tables; // <-- No longer needed
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore; // <-- ADD THIS
+using System.IO;                   // <-- ADD THIS
+using System.Threading.Tasks;      // <-- ADD THIS
+using System.Collections.Generic;    // <-- ADD THIS
 
 namespace ABCRetail.Functions
 {
     public class CustomersApi
     {
         private readonly ILogger<CustomersApi> _logger;
-        private readonly TableClient _tableClient;
+        private readonly AppDbContext _context; // <-- CHANGE THIS
 
-        public CustomersApi(ILogger<CustomersApi> logger)
+        // Inject the AppDbContext here
+        public CustomersApi(ILogger<CustomersApi> logger, AppDbContext context)
         {
             _logger = logger;
-            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-            _tableClient = new TableClient(connectionString, "customer");
-            _tableClient.CreateIfNotExists();
+            _context = context; // <-- ASSIGN THIS
+            // All TableClient logic is removed
         }
 
         [Function("CreateCustomer")]
         public async Task<HttpResponseData> CreateCustomer(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers")] HttpRequestData req)
         {
-            _logger.LogInformation("Request to create a customer.");
+            _logger.LogInformation("Request to create a customer (SQL).");
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
             if (string.IsNullOrEmpty(requestBody))
@@ -38,12 +42,12 @@ namespace ABCRetail.Functions
             {
                 var customer = JsonSerializer.Deserialize<Customer>(requestBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                customer.PartitionKey = "customer";
-                customer.RowKey = Guid.NewGuid().ToString();
+                // --- NEW EF Core Logic ---
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync();
+                // --- End EF Core Logic ---
 
-                _logger.LogInformation($"Attempting to add customer with RowKey: {customer.RowKey}");
-                await _tableClient.AddEntityAsync(customer);
-                _logger.LogInformation("Customer added successfully.");
+                _logger.LogInformation($"Customer added to SQL successfully with ID: {customer.CustomerId}");
 
                 var response = req.CreateResponse(HttpStatusCode.Created);
                 await response.WriteAsJsonAsync(customer);
@@ -51,28 +55,26 @@ namespace ABCRetail.Functions
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while creating the customer.");
+                _logger.LogError(ex, "An error occurred while creating the customer (SQL).");
                 var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
                 await errorResponse.WriteStringAsync("An error occurred on the server.");
                 return errorResponse;
             }
         }
 
-        // --- All other functions (GetCustomers, etc.) remain below ---
-
         [Function("GetCustomers")]
         public async Task<HttpResponseData> GetCustomers(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers")] HttpRequestData req)
         {
-            var customers = new List<Customer>();
-            await foreach (var entity in _tableClient.QueryAsync<Customer>())
-            {
-                customers.Add(entity);
-            }
+            _logger.LogInformation("Request to get all customers (SQL).");
+
+            // --- NEW EF Core Logic ---
+            var customers = await _context.Customers.ToListAsync();
+            // --- End EF Core Logic ---
+
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(customers);
             return response;
         }
-
     }
 }

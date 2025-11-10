@@ -16,7 +16,7 @@
     @foreach (var item in Model)
     {
         <div class="product-card">
-            <a asp-action="Details" asp-route-id="@item.RowKey" class="text-decoration-none text-dark">
+            <a asp-action="Details" asp-route-id="@item.ProductId" class="text-decoration-none text-dark">
                 <img src="@(item.ImageUrl ?? "https://via.placeholder.com/300x200.png?text=No+Image")"
                      class="product-card-img"
                      alt="@item.Name" />
